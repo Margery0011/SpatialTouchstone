@@ -30,3 +30,5 @@ Imports:
     viridis,
     BiocParallel,
     shadowtext
+URL: https://github.com/Margery0011/SpatiaTouchstone
+BugReports: https://github.com/Margery0011/SpatiaTouchstone/issues
