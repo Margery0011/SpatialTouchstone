@@ -266,7 +266,7 @@ getTxPerArea <- function(seu_obj,
 #' @export
 #' @import Seurat
 #' @importFrom dplyr filter group_by summarize
-#' @importMethodsFrom dplyr %>% n
+
 getTxPerNuc <- function(seu_obj,
                         features=NULL){
   if(is.null(features)){
@@ -496,7 +496,8 @@ getMaxDetection <- function(seu_obj,
 #' the average mutually exclusive co-expression rate across the selected markers.
 #' @export
 #' @import Seurat
-#' @importFrom dplyr %>%
+
+
 getMECR <- function(seu_obj) {
   #This function comes from Hartman & Satija, bioRxiv, 2024
   #We are using a custom marker table. The original publication bases it on
@@ -648,7 +649,7 @@ getMorans <- function(seu_obj,
 #' @export
 #' @import Seurat
 #' @importFrom bluster approxSilhouette
-#' @importFrom dplyr %>%
+
 
 getSilhouetteWidth <- function(seu_obj){
   print("Clustering data")
