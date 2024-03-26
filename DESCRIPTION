@@ -2,7 +2,8 @@ Package: SpatiaTouchstone
 Title: MultiQC for spatialdata across 
 Version: 0.0.0.9000
 Authors@R: 
-    person("Felipe", "Dezem-Segato", , "felipe.segatodezem@stjude.org")
+    c(person("Felipe", "Dezem-Segato",role = c("aut", "cre"),email="felipe.segatodezem@stjude.org"),
+       person("Yutian","Liu",role="ctb",email="yutian.liu@stjude.org"))
 Description: What the package does (one paragraph).
 License: MIT + file LICENSE
 Encoding: UTF-8

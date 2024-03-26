@@ -8,15 +8,13 @@
 globalVariables(c("target", "FDR", "cell_id","overlaps_nucleus","CellComp","platform","value","sample_id","type","samples","column","squish"))
 globalVariables(c(":=", "."))
 
-#####
-# readSpatial() reads in data from either Xenium, CosMx, of MERSCOPE.
-# It outputs a seurat object with some common metadata e for downstream comparison.
-# Regardless of platform, data is stored in an assay named "RNA" for convenient
-# function
+
+
 #' @title readSpatial.
-#' @describeIn It outputs a seurat object with some common metadata e for downstream comparison.
+#' @description
+#' readSaptial reads in data from either Xenium, CosMx, of MERSCOPE and outputs a seurat object with some common metadata e for downstream comparison.
 #' @details
-#' Regardless of platform, data is stored in an assay named "RNA" for convenient.
+#' Regardless of platform, data is stored in an assay named "RNA" for convenient and for each platform, this table will be used by subsequent functions.
 #' @param sample_id A unique identifier for the sample being read.
 #' @param path The file path to the directory containing the data files.
 #' @param platform A character string indicating the platform of the data, Must be one of "Xenium", "CosMx", or "MERSCOPE".
@@ -111,7 +109,7 @@ readSpatial <- function(sample_id, path, platform){
   return(seu_obj)
 }
 
-#####
+
 #' @title readTxMeta.
 #' @describeIn It  reads in the transcript localization/metadata table.
 #' @details
@@ -120,8 +118,7 @@ readSpatial <- function(sample_id, path, platform){
 #' @param platform A character string indicating the platform of the data, Must be one of "Xenium", "CosMx", or "MERSCOPE".
 #' @export
 #' @importFrom data.table fread setnames
-# readTxMeta() simply reads in the transcript localization/metadata table
-# for each platform. This table will be used by subsequent functions
+
 readTxMeta <- function(path, platform){
   if(platform == "Xenium"){
     df <- data.table::fread(file.path(path, "transcripts.csv.gz"))
