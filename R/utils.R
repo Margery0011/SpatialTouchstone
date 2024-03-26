@@ -111,7 +111,8 @@ readSpatial <- function(sample_id, path, platform){
 
 
 #' @title readTxMeta.
-#' @describeIn It  reads in the transcript localization/metadata table.
+#' @description
+#'  It reads in the transcript localization/metadata table.
 #' @details
 #' For each platform, This table will be used by subsequent functions.
 #' @param path The file path to the directory containing the data files.
@@ -142,10 +143,13 @@ readTxMeta <- function(path, platform){
 #######
 #' Calculate Specificity as Global False Discovery Rate (FDR)
 #'
-#' This function calculates the global FDR based on the proportion of
-#' negative control or 'blank' barcodes within the dataset. It's designed
-#' to provide a measure of specificity across the entire panel of probes.
+
 #' @title getGlobalFDR
+#' @description
+#' Calculate Specificity as Global False Discovery Rate (FDR).
+#' @details
+#' This function calculates the global FDR based on the proportion of negative control or 'blank' barcodes within the dataset. It's designed
+#' to provide a measure of specificity across the entire panel of probes.
 #' @param seu_obj A Seurat object containing the spatial data, Must have
 #' unique path and platform identifiers in its metadata.
 #' @param features An optional vector of features (gene names) to include in the FDR calculation. If NULL, all features in the object are used.
@@ -232,6 +236,8 @@ getTxPerCell <- function(seu_obj, #features can be explicitly defined. Defaults 
 ### Transcripts per um2
 
 #' @title getTxPerArea.
+#' @description
+#' It calculates transcripts per um2.
 #' @param seu_obj A Seurat object.
 #' @param features Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.
 #' @return A data frame containing sample_id, platform, and the average number of transcripts per um2
@@ -257,7 +263,9 @@ getTxPerArea <- function(seu_obj,
 }
 
 ### Transcripts per nucleus
-#' @title getTxPerNuc
+#' @title getTxPerNuc.
+#' @description
+#' It calculates ranscripts per nucleus.
 #' @param seu_obj A Seurat object.
 #' @param features Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.
 #' @export
@@ -314,6 +322,8 @@ getTxPerNuc <- function(seu_obj,
 
 ### Per Probe Mean Expression
 #' @title getMeanExpression.
+#' @description
+#' It calculated mean expression per probe.
 #' @param  seu_obj seurat object.
 #' @param features Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.
 #' @return A data frame with probe type (Gene or Control), the mean expression values, and the associated sample and platform identifiers.
@@ -348,6 +358,8 @@ getMeanExpression <- function(seu_obj,
 
 ### log-ratio of mean gene counts to mean neg probe counts
 #' @title getMeanSignalRatio.
+#' @description
+#' It calculates log-ratio of mean gene counts to mean neg probe counts.
 #' @param seu_obj A Seurat object.
 #' @param features Optional; specifies which genes to include in the calculation. If NULL, all genes in the RNA assay are considered.
 #' @return A data frame with sample_id, platform, and the calculated mean log-ratio.
@@ -378,6 +390,8 @@ getMeanSignalRatio <- function(seu_obj,
 
 ### Fraction of transcripts in cells
 #' @title getCellTxFraction.
+#' @description
+#' It calculates fraction of transcripts in cells.
 #' @param  seu_obj seurat object.
 #' @param features Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.
 #' @return A data frame with probe type (Gene or Control), the mean expression values, and the associated sample and platform identifiers.
@@ -430,6 +444,8 @@ getCellTxFraction <- function(seu_obj,
 ##### Dynamic Range
 # Log-ratio of highest mean exp vs. mean noise
 #' @title getMaxRatio.
+#' @description
+#' It calculateds the Log-ratio of highest mean exp vs. mean noise.
 #' @param  seu_obj seurat object.
 #' @param features Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.
 #' @return A data frame.
@@ -459,6 +475,8 @@ getMaxRatio <- function(seu_obj,
 
 # Distribution of maximal values
 #' @title getMaxDetection.
+#' @description
+#' It calculates the distribution of maximal values.
 #' @param  seu_obj seurat object.
 #' @param features Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.
 #' @return A data frame.
@@ -487,6 +505,8 @@ getMaxDetection <- function(seu_obj,
 
 ##### Mutually Exclusive Co-expression Rate (MECR) Implementation
 #' @title getMECR.
+#' @description
+#' It calculates  Mutually Exclusive Co-expression Rate (MECR) Implementation.
 #' @param  seu_obj A seurat object.
 #' @return A data frame containing the `sample_id`, `platform`, and the computed
 #' MECR value. The MECR value is rounded to three decimal places and represents
@@ -641,6 +661,8 @@ getMorans <- function(seu_obj,
 
 ##### Cluster evaluation: silhouette width
 #' @title getSilhouetteWidth.
+#' @description
+#' It calculates silhouette width as cluster evaluation.
 #' @param seu_obj A Seurat object.
 #' @return A data frame.
 #' @export
@@ -681,6 +703,10 @@ getSilhouetteWidth <- function(seu_obj){
 #Show the sparsity (as a count or proportion) of a matrix.
 #For example, .99 sparsity means 99% of the values are zero. Similarly, a sparsity of 0 means the matrix is fully dense.
 #' @title getSparsity.
+#' @description
+#' It shows the sparsity (as a count or proportion) of a matrix.
+#' @details
+#' For example, .99 sparsity means 99% of the values are zero. Similarly, a sparsity of 0 means the matrix is fully dense.
 #' @param seu_obj A Seurat object.
 #' @return A data frame.
 #' @export
