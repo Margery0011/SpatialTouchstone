@@ -38,11 +38,67 @@ Spatialomics technologies are revolutionizing how we understand biological tissu
 
 Calculate Specificity as Global False Discovery Rate (FDR)
 
+
+' @details
+' Computes the global FDR for specified features (or all features by default) in a Seurat object.
+' It leverages transcript localization data to calculate FDR based on the proportion of negative control
+' or blank barcode expressions compared to the expression of actual genes.
+' @title getGlobalFDR
+' @description
+' Calculate Specificity as Global False Discovery Rate (FDR).
+' @param seu_obj A Seurat object containing spatial data, including a path and platform attribute.
+' @param features An optional vector of feature names (gene names) for which to calculate the FDR.
+'        If NULL (default), FDR is calculated for all features in the seu_obj.
+' @export
+' @importFrom data.table fread .N
+' @importFrom Seurat CreateSeuratObject
+' @return A data frame with columns for sample_id, platform, and the
+' calculated mean FDR across the specified features.
+' @examples
+
 #### getTxPerCell
 
 Calculates the average number of transcripts per cell for the given features.
 
+' @title getTxPerCell.
+' @description Calculates the average number of transcripts per cell for the given features.
+' @details
+' This function calculates the mean number of transcripts per cell for a specified set of features (genes)
+' in a Seurat object. If no features are specified, the function defaults to using all targets available
+' within the RNA assay of the provided Seurat object. It's a useful metric for assessing the overall
+' transcriptional activity within the sampled cells.
+' @param seu_obj A Seurat object containing single-cell RNA sequencing data, including predefined assays
+'        like 'RNA'. The object must have 'sample_id' and 'platform' metadata attributes for identification
+'        and reporting purposes.
+' @param features An optional vector of feature names (e.g., gene symbols) to include in the calculation.
+'        Defaults to NULL, in which case the calculation uses all available features in the RNA assay
+'        of the Seurat object.
+' @return A data frame with columns 'sample_id', 'platform', and 'value', where 'value' represents the
+'         mean number of transcripts per cell calculated across the specified features. This output can
+'         be useful for comparative analysis across samples or experimental conditions.
+' @export
+' @import Seurat
+
 #### getTxPerArea
+
+' This function calculates the mean number of transcripts per unit area for specified features (genes) in a Seurat object.
+' If no features are specified, the function defaults to using all targets within the RNA assay of the provided Seurat object.
+' This calculation provides insight into the density of transcriptional activity relative to cell area, offering a normalized
+' measure of gene expression that accounts for differences in cell size.
+' @title getTxPerArea.
+' @description
+' Calculate Mean Transcripts per Unit Area
+' @param seu_obj A Seurat object containing single-cell RNA sequencing data, with an RNA assay and cell area information.
+'        The object must have 'sample_id' and 'platform' metadata for identification and reporting. It is expected that
+'        `seu_obj$cell_area` contains the area information for each cell.
+' @param features An optional vector of feature names (e.g., gene symbols) for which to calculate transcripts per unit area.
+'        Defaults to NULL, which means the calculation uses all available features in the RNA assay of the Seurat object.
+' @return Returns a data frame with three columns: `sample_id`, `platform`, and `value`. The `value` column contains
+'         the computed mean number of transcripts per unit area for the selected features across all cells in the dataset.
+'         This data frame provides a concise summary of transcriptional activity normalized by cell size, which can be
+'         critical for downstream analyses, especially in studies where cell morphology and size are variable.
+' @import Seurat
+' @export
 
 #### getTxPerNuc
 

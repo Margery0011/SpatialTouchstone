@@ -7,20 +7,25 @@
 getTxPerCell(seu_obj, features = NULL)
 }
 \arguments{
-\item{seu_obj}{A Seurat object.}
+\item{seu_obj}{A Seurat object containing single-cell RNA sequencing data, including predefined assays
+like 'RNA'. The object must have 'sample_id' and 'platform' metadata attributes for identification
+and reporting purposes.}
 
-\item{features}{Optional; a vector of features to include in the calculation; If NULL, all features are used.}
+\item{features}{An optional vector of feature names (e.g., gene symbols) to include in the calculation.
+Defaults to NULL, in which case the calculation uses all available features in the RNA assay
+of the Seurat object.}
 }
 \value{
-A data frame containing sample_id, platform, and the average number of transcripts per cell.
+A data frame with columns 'sample_id', 'platform', and 'value', where 'value' represents the
+mean number of transcripts per cell calculated across the specified features. This output can
+be useful for comparative analysis across samples or experimental conditions.
 }
 \description{
 Calculates the average number of transcripts per cell for the given features.
 }
 \details{
-Calculate Transcripts per Cell
-
-Calculates the average number of transcripts per cell for the given features.
-
-This metric helps in understanding the transcriptomic richness of cells in spatial transcriptomics datasets.
+This function calculates the mean number of transcripts per cell for a specified set of features (genes)
+in a Seurat object. If no features are specified, the function defaults to using all targets available
+within the RNA assay of the provided Seurat object. It's a useful metric for assessing the overall
+transcriptional activity within the sampled cells.
 }

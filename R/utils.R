@@ -223,17 +223,23 @@ getGlobalFDR <- function(seu_obj, features=NULL) {
 }
 
 
-### Transcripts per cell
-#' Calculate Transcripts per Cell
-#'
-#' Calculates the average number of transcripts per cell for the given features.
+
 #' @title getTxPerCell.
 #' @description Calculates the average number of transcripts per cell for the given features.
 #' @details
-#' This metric helps in understanding the transcriptomic richness of cells in spatial transcriptomics datasets.
-#' @param seu_obj A Seurat object.
-#' @param features Optional; a vector of features to include in the calculation; If NULL, all features are used.
-#' @return A data frame containing sample_id, platform, and the average number of transcripts per cell.
+#' This function calculates the mean number of transcripts per cell for a specified set of features (genes)
+#' in a Seurat object. If no features are specified, the function defaults to using all targets available
+#' within the RNA assay of the provided Seurat object. It's a useful metric for assessing the overall
+#' transcriptional activity within the sampled cells.
+#' @param seu_obj A Seurat object containing single-cell RNA sequencing data, including predefined assays
+#'        like 'RNA'. The object must have 'sample_id' and 'platform' metadata attributes for identification
+#'        and reporting purposes.
+#' @param features An optional vector of feature names (e.g., gene symbols) to include in the calculation.
+#'        Defaults to NULL, in which case the calculation uses all available features in the RNA assay
+#'        of the Seurat object.
+#' @return A data frame with columns 'sample_id', 'platform', and 'value', where 'value' represents the
+#'         mean number of transcripts per cell calculated across the specified features. This output can
+#'         be useful for comparative analysis across samples or experimental conditions.
 #' @export
 #' @import Seurat
 getTxPerCell <- function(seu_obj, #features can be explicitly defined. Defaults to all targets
@@ -254,14 +260,23 @@ getTxPerCell <- function(seu_obj, #features can be explicitly defined. Defaults 
   return(res)
 }
 
-### Transcripts per um2
 
+#' This function calculates the mean number of transcripts per unit area for specified features (genes) in a Seurat object.
+#' If no features are specified, the function defaults to using all targets within the RNA assay of the provided Seurat object.
+#' This calculation provides insight into the density of transcriptional activity relative to cell area, offering a normalized
+#' measure of gene expression that accounts for differences in cell size.
 #' @title getTxPerArea.
 #' @description
-#' It calculates transcripts per um2.
-#' @param seu_obj A Seurat object.
-#' @param features Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.
-#' @return A data frame containing sample_id, platform, and the average number of transcripts per um2
+#' Calculate Mean Transcripts per Unit Area
+#' @param seu_obj A Seurat object containing single-cell RNA sequencing data, with an RNA assay and cell area information.
+#'        The object must have 'sample_id' and 'platform' metadata for identification and reporting. It is expected that
+#'        `seu_obj$cell_area` contains the area information for each cell.
+#' @param features An optional vector of feature names (e.g., gene symbols) for which to calculate transcripts per unit area.
+#'        Defaults to NULL, which means the calculation uses all available features in the RNA assay of the Seurat object.
+#' @return Returns a data frame with three columns: `sample_id`, `platform`, and `value`. The `value` column contains
+#'         the computed mean number of transcripts per unit area for the selected features across all cells in the dataset.
+#'         This data frame provides a concise summary of transcriptional activity normalized by cell size, which can be
+#'         critical for downstream analyses, especially in studies where cell morphology and size are variable.
 #' @import Seurat
 #' @export
 getTxPerArea <- function(seu_obj,

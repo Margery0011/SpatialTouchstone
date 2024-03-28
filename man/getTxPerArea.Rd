@@ -7,13 +7,25 @@
 getTxPerArea(seu_obj, features = NULL)
 }
 \arguments{
-\item{seu_obj}{A Seurat object.}
+\item{seu_obj}{A Seurat object containing single-cell RNA sequencing data, with an RNA assay and cell area information.
+The object must have 'sample_id' and 'platform' metadata for identification and reporting. It is expected that
+\code{seu_obj$cell_area} contains the area information for each cell.}
 
-\item{features}{Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.}
+\item{features}{An optional vector of feature names (e.g., gene symbols) for which to calculate transcripts per unit area.
+Defaults to NULL, which means the calculation uses all available features in the RNA assay of the Seurat object.}
 }
 \value{
-A data frame containing sample_id, platform, and the average number of transcripts per um2
+Returns a data frame with three columns: \code{sample_id}, \code{platform}, and \code{value}. The \code{value} column contains
+the computed mean number of transcripts per unit area for the selected features across all cells in the dataset.
+This data frame provides a concise summary of transcriptional activity normalized by cell size, which can be
+critical for downstream analyses, especially in studies where cell morphology and size are variable.
 }
 \description{
-It calculates transcripts per um2.
+Calculate Mean Transcripts per Unit Area
+}
+\details{
+This function calculates the mean number of transcripts per unit area for specified features (genes) in a Seurat object.
+If no features are specified, the function defaults to using all targets within the RNA assay of the provided Seurat object.
+This calculation provides insight into the density of transcriptional activity relative to cell area, offering a normalized
+measure of gene expression that accounts for differences in cell size.
 }
