@@ -66,3 +66,5 @@ Calculates the average number of transcripts per cell for the given features.
 - plotSilhouette 
 - plotSparsity 
 - plotEntropy
+
+## plotMetrics

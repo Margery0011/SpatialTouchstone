@@ -10,18 +10,32 @@ globalVariables(c(":=", "."))
 
 
 
+#' Reads and preprocesses spatial transcriptomics data from a specified path for a given platform.
+#' The function supports 'Xenium' and 'CosMx' platforms, performing platform-specific loading and
+#' preprocessing steps. This includes loading the data, annotating it with sample metadata, and
+#' processing cell metadata. For 'Xenium', it adds additional cell metadata and tissue coordinates
+#' as an embedding for custom plotting. For 'CosMx', it fixes assays to separate targeting and
+#' non-targeting probes, adds additional cell metadata, and includes tissue coordinates as an embedding.
+#' 'Merscope' platform support is under development.
 #' @title readSpatial.
 #' @description
 #' readSaptial reads in data from either Xenium, CosMx, of MERSCOPE and outputs a seurat object with some common metadata e for downstream comparison.
 #' @details
 #' Regardless of platform, data is stored in an assay named "RNA" for convenient and for each platform, this table will be used by subsequent functions.
-#' @param sample_id A unique identifier for the sample being read.
-#' @param path The file path to the directory containing the data files.
-#' @param platform A character string indicating the platform of the data, Must be one of "Xenium", "CosMx", or "MERSCOPE".
-#' @return A Seurat object containing the spatial data, with additional metadata and embeddings as applicable per platform.
+#' @param sample_id Identifier for the sample being processed.
+#' @param path The file path from which to load the spatial transcriptomics data.
+#' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+#'        and 'Merscope'. Note: 'Merscope' is currently not supported.
+##' @return Returns a Seurat object containing the loaded and processed spatial transcriptomics data,
+#'         including sample metadata, cell metadata, and embeddings for tissue coordinates. The
+#'         structure and content of the returned object vary depending on the platform.
 #' @importFrom Seurat CreateSeuratObject
 #' @importFrom data.table fread
+#' @examples
+#' seu_obj <- readSpatial(sample_id = "sample123", path = "path/to/xenium/data", platform = "Xenium")
+#' seu_obj <- readSpatial(sample_id = "sample456", path = "path/to/cosmx/data", platform = "CosMx")
 #' @export
+#' @keywords readSpatialdata
 readSpatial <- function(sample_id, path, platform){
   print(paste0("Reading: ", sample_id))
   if(platform == "Xenium"){
@@ -110,13 +124,21 @@ readSpatial <- function(sample_id, path, platform){
 }
 
 
+#' This function reads transcriptome metadata from a specified path, depending on the platform specified.
+#' Currently supports 'Xenium' and 'CosMx' platforms. For 'Xenium', it reads 'transcripts.csv.gz' and renames
+#' the 'feature_name' column to 'target' for consistency. For 'CosMx', it reads the appropriate transcriptome
+#' file matched by '*tx_file.csv.gz'. 'Merscope' platform support is under development.
 #' @title readTxMeta.
 #' @description
 #'  It reads in the transcript localization/metadata table.
 #' @details
 #' For each platform, This table will be used by subsequent functions.
-#' @param path The file path to the directory containing the data files.
-#' @param platform A character string indicating the platform of the data, Must be one of "Xenium", "CosMx", or "MERSCOPE".
+#' @param path The file path from which to read the transcriptome metadata.
+#' @param platform  The platform for which the transcriptome metadata is being read. Valid options are
+#'        'Xenium', 'CosMx', and 'Merscope'. Note: 'Merscope' is currently not supported.
+#' @return Returns a data table with the transcriptome metadata. For 'Xenium', the 'feature_name' column is
+#'         renamed to 'target'. For 'CosMx', the transcriptome file matching '*tx_file.csv.gz' is read.
+#'         No return value for 'Merscope' as it stops execution with an error message.
 #' @export
 #' @importFrom data.table fread setnames
 
@@ -141,24 +163,25 @@ readTxMeta <- function(path, platform){
 #######
 # QC
 #######
-#' Calculate Specificity as Global False Discovery Rate (FDR)
-#'
-
+#' @details
+#' Computes the global FDR for specified features (or all features by default) in a Seurat object.
+#' It leverages transcript localization data to calculate FDR based on the proportion of negative control
+#' or blank barcode expressions compared to the expression of actual genes.
 #' @title getGlobalFDR
 #' @description
 #' Calculate Specificity as Global False Discovery Rate (FDR).
-#' @details
-#' This function calculates the global FDR based on the proportion of negative control or 'blank' barcodes within the dataset. It's designed
-#' to provide a measure of specificity across the entire panel of probes.
-#' @param seu_obj A Seurat object containing the spatial data, Must have
-#' unique path and platform identifiers in its metadata.
-#' @param features An optional vector of features (gene names) to include in the FDR calculation. If NULL, all features in the object are used.
+#' @param seu_obj A Seurat object containing spatial data, including a path and platform attribute.
+#' @param features An optional vector of feature names (gene names) for which to calculate the FDR.
+#'        If NULL (default), FDR is calculated for all features in the seu_obj.
 #' @export
 #' @importFrom data.table fread .N
 #' @importFrom Seurat CreateSeuratObject
 #' @return A data frame with columns for sample_id, platform, and the
 #' calculated mean FDR across the specified features.
-### Specificity as Global FDR ###
+#' @examples
+#'
+#' res <- getGlobalFDR(seu_obj)
+#' res <- getGlobalFDR(seu_obj, features = c("Gene1", "Gene2"))
 getGlobalFDR <- function(seu_obj, features=NULL) {
   if(is.null(features)){
     features <- rownames(seu_obj)
@@ -191,15 +214,13 @@ getGlobalFDR <- function(seu_obj, features=NULL) {
   }
 
   res <- data.frame(
-    sample_id = unique(seu_obj$sample_id),
+    #sample_id = unique(seu_obj$sample_id),
     platform = unique(seu_obj$platform),
     value= mean(expTable$FDR)
   )
   return(res)
 
 }
-
-
 
 
 ### Transcripts per cell
