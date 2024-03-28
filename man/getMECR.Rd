@@ -15,5 +15,5 @@ MECR value. The MECR value is rounded to three decimal places and represents
 the average mutually exclusive co-expression rate across the selected markers.
 }
 \description{
-getMECR.
+It calculates  Mutually Exclusive Co-expression Rate (MECR) Implementation.
 }

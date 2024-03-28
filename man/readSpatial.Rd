@@ -7,18 +7,34 @@
 readSpatial(sample_id, path, platform)
 }
 \arguments{
-\item{sample_id}{A unique identifier for the sample being read.}
+\item{sample_id}{Identifier for the sample being processed.}
 
-\item{path}{The file path to the directory containing the data files.}
+\item{path}{The file path from which to load the spatial transcriptomics data.}
 
-\item{platform}{A character string indicating the platform of the data, Must be one of "Xenium", "CosMx", or "MERSCOPE".}
+\item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+and 'Merscope'. Note: 'Merscope' is currently not supported.}
 }
 \value{
-A Seurat object containing the spatial data, with additional metadata and embeddings as applicable per platform.
+Returns a Seurat object containing the loaded and processed spatial transcriptomics data,
+including sample metadata, cell metadata, and embeddings for tissue coordinates. The
+structure and content of the returned object vary depending on the platform.
 }
 \description{
 readSaptial reads in data from either Xenium, CosMx, of MERSCOPE and outputs a seurat object with some common metadata e for downstream comparison.
 }
 \details{
+Reads and preprocesses spatial transcriptomics data from a specified path for a given platform.
+The function supports 'Xenium' and 'CosMx' platforms, performing platform-specific loading and
+preprocessing steps. This includes loading the data, annotating it with sample metadata, and
+processing cell metadata. For 'Xenium', it adds additional cell metadata and tissue coordinates
+as an embedding for custom plotting. For 'CosMx', it fixes assays to separate targeting and
+non-targeting probes, adds additional cell metadata, and includes tissue coordinates as an embedding.
+'Merscope' platform support is under development.
+
 Regardless of platform, data is stored in an assay named "RNA" for convenient and for each platform, this table will be used by subsequent functions.
 }
+\examples{
+seu_obj <- readSpatial(sample_id = "sample123", path = "path/to/xenium/data", platform = "Xenium")
+seu_obj <- readSpatial(sample_id = "sample456", path = "path/to/cosmx/data", platform = "CosMx")
+}
+\keyword{readSpatialdata}

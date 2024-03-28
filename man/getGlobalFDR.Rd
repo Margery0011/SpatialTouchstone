@@ -7,20 +7,25 @@
 getGlobalFDR(seu_obj, features = NULL)
 }
 \arguments{
-\item{seu_obj}{A Seurat object containing the spatial data, Must have
-unique path and platform identifiers in its metadata.}
+\item{seu_obj}{A Seurat object containing spatial data, including a path and platform attribute.}
 
-\item{features}{An optional vector of features (gene names) to include in the FDR calculation. If NULL, all features in the object are used.}
+\item{features}{An optional vector of feature names (gene names) for which to calculate the FDR.
+If NULL (default), FDR is calculated for all features in the seu_obj.}
 }
 \value{
 A data frame with columns for sample_id, platform, and the
 calculated mean FDR across the specified features.
 }
 \description{
-Calculate Specificity as Global False Discovery Rate (FDR)
+Calculate Specificity as Global False Discovery Rate (FDR).
 }
 \details{
-This function calculates the global FDR based on the proportion of
-negative control or 'blank' barcodes within the dataset. It's designed
-to provide a measure of specificity across the entire panel of probes.
+Computes the global FDR for specified features (or all features by default) in a Seurat object.
+It leverages transcript localization data to calculate FDR based on the proportion of negative control
+or blank barcode expressions compared to the expression of actual genes.
+}
+\examples{
+
+res <- getGlobalFDR(seu_obj)
+res <- getGlobalFDR(seu_obj, features = c("Gene1", "Gene2"))
 }

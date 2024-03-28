@@ -15,5 +15,5 @@ getMaxRatio(seu_obj, features = NULL)
 A data frame.
 }
 \description{
-getMaxRatio.
+It calculateds the Log-ratio of highest mean exp vs. mean noise.
 }

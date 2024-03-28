@@ -15,5 +15,5 @@ getMeanSignalRatio(seu_obj, features = NULL)
 A data frame with sample_id, platform, and the calculated mean log-ratio.
 }
 \description{
-getMeanSignalRatio.
+It calculates log-ratio of mean gene counts to mean neg probe counts.
 }

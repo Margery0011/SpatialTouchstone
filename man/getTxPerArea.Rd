@@ -15,5 +15,5 @@ getTxPerArea(seu_obj, features = NULL)
 A data frame containing sample_id, platform, and the average number of transcripts per um2
 }
 \description{
-getTxPerArea.
+It calculates transcripts per um2.
 }

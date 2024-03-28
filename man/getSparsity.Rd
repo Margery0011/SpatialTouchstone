@@ -13,5 +13,8 @@ getSparsity(seu_obj)
 A data frame.
 }
 \description{
-getSparsity.
+It shows the sparsity (as a count or proportion) of a matrix.
+}
+\details{
+For example, .99 sparsity means 99\% of the values are zero. Similarly, a sparsity of 0 means the matrix is fully dense.
 }

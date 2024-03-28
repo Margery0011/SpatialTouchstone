@@ -15,5 +15,5 @@ getCellTxFraction(seu_obj, features = NULL)
 A data frame with probe type (Gene or Control), the mean expression values, and the associated sample and platform identifiers.
 }
 \description{
-getCellTxFraction.
+It calculates fraction of transcripts in cells.
 }

@@ -15,5 +15,5 @@ getMeanExpression(seu_obj, features = NULL)
 A data frame with probe type (Gene or Control), the mean expression values, and the associated sample and platform identifiers.
 }
 \description{
-getMeanExpression.
+It calculated mean expression per probe.
 }

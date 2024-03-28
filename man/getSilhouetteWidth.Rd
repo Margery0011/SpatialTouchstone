@@ -13,5 +13,5 @@ getSilhouetteWidth(seu_obj)
 A data frame.
 }
 \description{
-getSilhouetteWidth.
+It calculates silhouette width as cluster evaluation.
 }

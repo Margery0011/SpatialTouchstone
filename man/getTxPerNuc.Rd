@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{getTxPerNuc}
 \alias{getTxPerNuc}
-\title{getTxPerNuc}
+\title{getTxPerNuc.}
 \usage{
 getTxPerNuc(seu_obj, features = NULL)
 }
@@ -12,5 +12,5 @@ getTxPerNuc(seu_obj, features = NULL)
 \item{features}{Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.}
 }
 \description{
-getTxPerNuc
+It calculates ranscripts per nucleus.
 }

@@ -15,5 +15,5 @@ getMaxDetection(seu_obj, features = NULL)
 A data frame.
 }
 \description{
-getMaxDetection.
+It calculates the distribution of maximal values.
 }
