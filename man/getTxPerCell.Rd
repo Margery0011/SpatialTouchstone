@@ -7,8 +7,7 @@
 getTxPerCell(seu_obj, features = NULL)
 }
 \arguments{
-\item{seu_obj}{A Seurat object containing single-cell RNA sequencing data, including predefined assays
-like 'RNA'. The object must have 'sample_id' and 'platform' metadata attributes for identification
+\item{seu_obj}{A Seurat object with RNA assays. The object must have 'sample_id' and 'platform' metadata attributes for identification
 and reporting purposes.}
 
 \item{features}{An optional vector of feature names (e.g., gene symbols) to include in the calculation.

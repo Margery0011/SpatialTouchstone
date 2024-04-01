@@ -7,10 +7,33 @@
 getTxPerNuc(seu_obj, features = NULL)
 }
 \arguments{
-\item{seu_obj}{A Seurat object.}
+\item{seu_obj}{A Seurat object containing spatial transcriptomics data with metadata attributes
+including 'path' and 'platform' to identify the location and type of data. The object is
+expected to be annotated with sample identifiers and must have been preprocessed to include
+information on cellular localization of transcripts.}
 
-\item{features}{Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.}
+\item{features}{An optional vector of feature names (genes) for which to calculate the mean transcripts
+per nucleus. If NULL (default), the function calculates this metric for all genes.}
+}
+\value{
+A data frame with the columns: \code{sample_id}, \code{platform}, and \code{value}, where \code{value} represents
+the mean number of transcripts per nucleus across the specified features for the dataset.
+This provides a focused view of nuclear gene expression.
 }
 \description{
 It calculates ranscripts per nucleus.
+}
+\details{
+This function calculates the mean number of transcripts localized within the nucleus
+for a specified set of features (genes) across all cells in a given dataset. This measurement
+is specific to spatial transcriptomics data where the distinction between nuclear and cytoplasmic
+transcript localization can be made. The function is designed to work with different platforms by
+reading transcript localization data using a helper function \code{readTxMeta}. If no features are
+specified, the function defaults to using all available genes.
+}
+\examples{
+`seu_obj` is a Seurat object prepared with the necessary metadata
+res <- getTxPerNuc(seu_obj)
+# For specific genes:
+res  <- getTxPerNuc(seu_obj, features = c("GAPDH", "ACTB"))
 }

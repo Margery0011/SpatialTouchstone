@@ -10,8 +10,14 @@ getSilhouetteWidth(seu_obj)
 \item{seu_obj}{A Seurat object.}
 }
 \value{
-A data frame.
+A data frame containing the \code{sample_id}, \code{platform},
+and the average silhouette width across all clusters, rounded to three decimal places.
 }
 \description{
 It calculates silhouette width as cluster evaluation.
+}
+\details{
+The silhouette width calculation involves preprocessing steps including normalization and scaling of the data, PCA for dimensionality reduction, and clustering.
+The silhouette width is then calculated for a downsampled subset of cells to ensure computational efficiency.
+This metric helps in assessing the cohesion and separation of the identified clusters, with higher values indicating better defined clusters.
 }

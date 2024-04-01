@@ -231,8 +231,7 @@ getGlobalFDR <- function(seu_obj, features=NULL) {
 #' in a Seurat object. If no features are specified, the function defaults to using all targets available
 #' within the RNA assay of the provided Seurat object. It's a useful metric for assessing the overall
 #' transcriptional activity within the sampled cells.
-#' @param seu_obj A Seurat object containing single-cell RNA sequencing data, including predefined assays
-#'        like 'RNA'. The object must have 'sample_id' and 'platform' metadata attributes for identification
+#' @param seu_obj A Seurat object with RNA assays. The object must have 'sample_id' and 'platform' metadata attributes for identification
 #'        and reporting purposes.
 #' @param features An optional vector of feature names (e.g., gene symbols) to include in the calculation.
 #'        Defaults to NULL, in which case the calculation uses all available features in the RNA assay
@@ -260,7 +259,6 @@ getTxPerCell <- function(seu_obj, #features can be explicitly defined. Defaults 
   return(res)
 }
 
-
 #' This function calculates the mean number of transcripts per unit area for specified features (genes) in a Seurat object.
 #' If no features are specified, the function defaults to using all targets within the RNA assay of the provided Seurat object.
 #' This calculation provides insight into the density of transcriptional activity relative to cell area, offering a normalized
@@ -268,7 +266,7 @@ getTxPerCell <- function(seu_obj, #features can be explicitly defined. Defaults 
 #' @title getTxPerArea.
 #' @description
 #' Calculate Mean Transcripts per Unit Area
-#' @param seu_obj A Seurat object containing single-cell RNA sequencing data, with an RNA assay and cell area information.
+#' @param seu_obj A Seurat object.
 #'        The object must have 'sample_id' and 'platform' metadata for identification and reporting. It is expected that
 #'        `seu_obj$cell_area` contains the area information for each cell.
 #' @param features An optional vector of feature names (e.g., gene symbols) for which to calculate transcripts per unit area.
@@ -302,8 +300,28 @@ getTxPerArea <- function(seu_obj,
 #' @title getTxPerNuc.
 #' @description
 #' It calculates ranscripts per nucleus.
-#' @param seu_obj A Seurat object.
-#' @param features Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.
+#' @details
+#' This function calculates the mean number of transcripts localized within the nucleus
+#' for a specified set of features (genes) across all cells in a given dataset. This measurement
+#' is specific to spatial transcriptomics data where the distinction between nuclear and cytoplasmic
+#' transcript localization can be made. The function is designed to work with different platforms by
+#' reading transcript localization data using a helper function `readTxMeta`. If no features are
+#' specified, the function defaults to using all available genes.
+#' @param seu_obj A Seurat object containing spatial transcriptomics data with metadata attributes
+#'        including 'path' and 'platform' to identify the location and type of data. The object is
+#'        expected to be annotated with sample identifiers and must have been preprocessed to include
+#'        information on cellular localization of transcripts.
+#' @param features An optional vector of feature names (genes) for which to calculate the mean transcripts
+#'        per nucleus. If NULL (default), the function calculates this metric for all genes.
+#' @return A data frame with the columns: `sample_id`, `platform`, and `value`, where `value` represents
+#'         the mean number of transcripts per nucleus across the specified features for the dataset.
+#'         This provides a focused view of nuclear gene expression.
+#'
+#' @examples
+#' `seu_obj` is a Seurat object prepared with the necessary metadata
+#' res <- getTxPerNuc(seu_obj)
+#' # For specific genes:
+#' res  <- getTxPerNuc(seu_obj, features = c("GAPDH", "ACTB"))
 #' @export
 #' @import Seurat
 #' @importFrom dplyr filter group_by summarize
@@ -360,9 +378,17 @@ getTxPerNuc <- function(seu_obj,
 #' @title getMeanExpression.
 #' @description
 #' It calculated mean expression per probe.
-#' @param  seu_obj seurat object.
-#' @param features Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.
-#' @return A data frame with probe type (Gene or Control), the mean expression values, and the associated sample and platform identifiers.
+#' @details
+#' Computes the mean expression levels for a specified list of features (genes)
+#' and control probes within a Seurat object. This function separately calculates the mean
+#' expression for both target genes and control probes, then combines these results into a
+#' single data frame. If no features are specified, it defaults to all genes in the RNA assay.
+#' @param seu_obj A Seurat object.
+#' This object must have an RNA assay for target genes and a ControlProbe assay for control probes.
+#' @param features An optional vector of gene names for which to calculate mean expression.
+#' If NULL, mean expression is calculated for all genes in the RNA assay.
+#' @return A data frame with columns `target` (gene or control probe name), `value` (mean expression level),
+#' `type` (indicating whether the row represents a Gene or Control), `platform`, and `sample_id`.
 #' @export
 #' @import Seurat
 getMeanExpression <- function(seu_obj,
@@ -396,9 +422,17 @@ getMeanExpression <- function(seu_obj,
 #' @title getMeanSignalRatio.
 #' @description
 #' It calculates log-ratio of mean gene counts to mean neg probe counts.
-#' @param seu_obj A Seurat object.
-#' @param features Optional; specifies which genes to include in the calculation. If NULL, all genes in the RNA assay are considered.
-#' @return A data frame with sample_id, platform, and the calculated mean log-ratio.
+#' @details
+#' Computes the log-ratio of the mean expression levels of specified genes (or all genes if none are specified)
+#' to the mean expression levels of negative control probes within a Seurat object. This metric can provide insights into
+#' the overall signal strength relative to background noise levels.
+#' @param seu_obj A Seurat object, expected to have both 'RNA' and 'ControlProbe'
+#' assays for calculating mean expression levels of genes and negative control probes, respectively.
+#' @param features An optional vector of gene names for which to calculate the mean log-ratio. If NULL, the calculation
+#' is performed for all genes present in the 'RNA' assay of the seu_obj.
+#' @return A data frame with three columns: `sample_id`, `platform`, and `value`, where `value` represents the calculated
+#' mean log-ratio of gene expression to negative control probe expression for the selected genes. This summary can be
+#' used to assess the signal-to-noise ratio in the dataset.
 #' @export
 
 getMeanSignalRatio <- function(seu_obj,
@@ -428,8 +462,13 @@ getMeanSignalRatio <- function(seu_obj,
 #' @title getCellTxFraction.
 #' @description
 #' It calculates fraction of transcripts in cells.
-#' @param  seu_obj seurat object.
-#' @param features Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.
+#' @details
+#' The function works by reading transcript metadata for the given sample and platform, then filtering for the specified features (if any).
+#' For each platform, it identifies transcripts that are not assigned to any cell ('UNASSIGNED' for Xenium, 'None' for CosMx, etc.) and calculates the fraction of transcripts that are assigned to cells.
+#' This metric is an important indicator of the quality of spatial transcriptomics data, reflecting the efficiency of transcript capture and cell assignment.
+#' @param seu_obj A Seurat object containing spatial transcriptomics data, expected to include metadata fields for `path` and `platform` to facilitate reading transcript metadata with `readTxMeta`.
+#' @param features An optional vector of gene identifiers for which to calculate the transcript fraction. If NULL, the calculation is performed using all available features in the dataset.
+#' @return A data frame containing the calculated fraction of transcripts in cells, along with `sample_id` and `platform` for context. This output provides insight into the efficiency of transcript capture and assignment within the given dataset.
 #' @return A data frame with probe type (Gene or Control), the mean expression values, and the associated sample and platform identifiers.
 #' @export
 #' @import Seurat
@@ -482,9 +521,17 @@ getCellTxFraction <- function(seu_obj,
 #' @title getMaxRatio.
 #' @description
 #' It calculateds the Log-ratio of highest mean exp vs. mean noise.
-#' @param  seu_obj seurat object.
-#' @param features Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.
-#' @return A data frame.
+#' @details
+#' The function identifies the maximum mean expression value among the specified features
+#' (or all features if none are specified) and calculates its log-ratio to the mean expression value
+#' of negative control probes. This log-ratio reflects the dynamic range of the dataset, indicating
+#' the spread between the highest signal and background noise levels, which is critical for assessing
+#' data quality and sensitivity of detection in spatial transcriptomics.
+#' @param seu_obj A Seurat object including assays for target genes ('RNA')
+#' and control probes ('ControlProbe').
+#' @param features An optional vector of gene identifiers for which to perform the calculation. If NULL, the calculation
+#' includes all genes in the RNA assay.
+#' @return A data frame with `sample_id`, `platform`, and the calculated `value` of the log-ratio.
 #' @export
 #' @import Seurat
 getMaxRatio <- function(seu_obj,
@@ -513,8 +560,19 @@ getMaxRatio <- function(seu_obj,
 #' @title getMaxDetection.
 #' @description
 #' It calculates the distribution of maximal values.
-#' @param  seu_obj seurat object.
-#' @param features Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.
+#' @details This function identifies the maximal expression values across the specified set of features
+#' (or all features if none are specified) within the dataset, illustrating the upper bounds of gene
+#' expression. Such information is crucial for assessing the dataset's dynamic range and the sensitivity
+#' of detection methods used in the experiment. The function aggregates these maximal values and presents
+#' them in a data frame, facilitating further analysis of the expression distribution and detection
+#' efficiency across different genes.
+#'
+#' @param seu_obj A Seurat object.
+#' @param features An optional vector of gene identifiers for which to analyze the distribution of maximal
+#' expression values. If NULL, the calculation encompasses all genes in the dataset.
+#' @return A data frame summarizing the maximal expression values across the specified features or the
+#' entire dataset, which can be used to analyze the upper limits of detection and expression within the
+#' sample.
 #' @return A data frame.
 #' @export
 #' @import Seurat
@@ -543,6 +601,11 @@ getMaxDetection <- function(seu_obj,
 #' @title getMECR.
 #' @description
 #' It calculates  Mutually Exclusive Co-expression Rate (MECR) Implementation.
+#' @details
+#' Based on a predefined set of markers and their associated cell types, this function computes the rate
+#' at which pairs of markers are expressed in mutually exclusive patterns within cells. The calculation is limited
+#' to markers found in the dataset and can be adjusted to focus on a subset by specifying it. The result is a
+#' single MECR value that quantifies the overall mutually exclusive co-expression pattern, rounded to three decimal places.
 #' @param  seu_obj A seurat object.
 #' @return A data frame containing the `sample_id`, `platform`, and the computed
 #' MECR value. The MECR value is rounded to three decimal places and represents
@@ -699,8 +762,12 @@ getMorans <- function(seu_obj,
 #' @title getSilhouetteWidth.
 #' @description
 #' It calculates silhouette width as cluster evaluation.
+#' @details The silhouette width calculation involves preprocessing steps including normalization and scaling of the data, PCA for dimensionality reduction, and clustering.
+#' The silhouette width is then calculated for a downsampled subset of cells to ensure computational efficiency.
+#' This metric helps in assessing the cohesion and separation of the identified clusters, with higher values indicating better defined clusters.
 #' @param seu_obj A Seurat object.
-#' @return A data frame.
+#' @return A data frame containing the `sample_id`, `platform`,
+#' and the average silhouette width across all clusters, rounded to three decimal places.
 #' @export
 #' @import Seurat
 #' @importFrom bluster approxSilhouette
@@ -760,8 +827,13 @@ getSparsity <- function(seu_obj) {
 }
 
 #' @title getEntropy.
-#' @param seu_obj A Seurat object.
-#' @return A data frame.
+#' @description Computes the entropy of the RNA count matrix within a Seurat object.
+#' @details
+#' Entropy is used to quantify the diversity or uniformity of gene expression across the dataset. This function calculates the entropy of the RNA count matrix, reflecting the distribution of gene expression levels.
+#' A higher entropy value suggests a more uniform distribution across genes, while a lower value indicates concentration in a smaller number of genes.
+#' This measure can provide insights into the complexity of the cellular composition and the heterogeneity within the sample.
+#' @param seu_obj A Seurat object containing RNA count data.
+#' @return A data frame with the `sample_id`, `platform`, and the entropy value of the RNA count matrix, rounded to three decimal places.
 #' @export
 #' @importFrom BioQC entropy
 getEntropy <- function(seu_obj) {

@@ -7,7 +7,7 @@
 getTxPerArea(seu_obj, features = NULL)
 }
 \arguments{
-\item{seu_obj}{A Seurat object containing single-cell RNA sequencing data, with an RNA assay and cell area information.
+\item{seu_obj}{A Seurat object.
 The object must have 'sample_id' and 'platform' metadata for identification and reporting. It is expected that
 \code{seu_obj$cell_area} contains the area information for each cell.}
 

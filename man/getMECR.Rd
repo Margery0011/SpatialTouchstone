@@ -17,3 +17,9 @@ the average mutually exclusive co-expression rate across the selected markers.
 \description{
 It calculates  Mutually Exclusive Co-expression Rate (MECR) Implementation.
 }
+\details{
+Based on a predefined set of markers and their associated cell types, this function computes the rate
+at which pairs of markers are expressed in mutually exclusive patterns within cells. The calculation is limited
+to markers found in the dataset and can be adjusted to focus on a subset by specifying it. The result is a
+single MECR value that quantifies the overall mutually exclusive co-expression pattern, rounded to three decimal places.
+}

@@ -7,13 +7,26 @@
 getMaxDetection(seu_obj, features = NULL)
 }
 \arguments{
-\item{seu_obj}{seurat object.}
+\item{seu_obj}{A Seurat object.}
 
-\item{features}{Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.}
+\item{features}{An optional vector of gene identifiers for which to analyze the distribution of maximal
+expression values. If NULL, the calculation encompasses all genes in the dataset.}
 }
 \value{
+A data frame summarizing the maximal expression values across the specified features or the
+entire dataset, which can be used to analyze the upper limits of detection and expression within the
+sample.
+
 A data frame.
 }
 \description{
 It calculates the distribution of maximal values.
+}
+\details{
+This function identifies the maximal expression values across the specified set of features
+(or all features if none are specified) within the dataset, illustrating the upper bounds of gene
+expression. Such information is crucial for assessing the dataset's dynamic range and the sensitivity
+of detection methods used in the experiment. The function aggregates these maximal values and presents
+them in a data frame, facilitating further analysis of the expression distribution and detection
+efficiency across different genes.
 }

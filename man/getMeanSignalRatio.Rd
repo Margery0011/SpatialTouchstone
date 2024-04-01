@@ -7,13 +7,22 @@
 getMeanSignalRatio(seu_obj, features = NULL)
 }
 \arguments{
-\item{seu_obj}{A Seurat object.}
+\item{seu_obj}{A Seurat object, expected to have both 'RNA' and 'ControlProbe'
+assays for calculating mean expression levels of genes and negative control probes, respectively.}
 
-\item{features}{Optional; specifies which genes to include in the calculation. If NULL, all genes in the RNA assay are considered.}
+\item{features}{An optional vector of gene names for which to calculate the mean log-ratio. If NULL, the calculation
+is performed for all genes present in the 'RNA' assay of the seu_obj.}
 }
 \value{
-A data frame with sample_id, platform, and the calculated mean log-ratio.
+A data frame with three columns: \code{sample_id}, \code{platform}, and \code{value}, where \code{value} represents the calculated
+mean log-ratio of gene expression to negative control probe expression for the selected genes. This summary can be
+used to assess the signal-to-noise ratio in the dataset.
 }
 \description{
 It calculates log-ratio of mean gene counts to mean neg probe counts.
+}
+\details{
+Computes the log-ratio of the mean expression levels of specified genes (or all genes if none are specified)
+to the mean expression levels of negative control probes within a Seurat object. This metric can provide insights into
+the overall signal strength relative to background noise levels.
 }

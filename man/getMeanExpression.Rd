@@ -7,13 +7,22 @@
 getMeanExpression(seu_obj, features = NULL)
 }
 \arguments{
-\item{seu_obj}{seurat object.}
+\item{seu_obj}{A Seurat object.
+This object must have an RNA assay for target genes and a ControlProbe assay for control probes.}
 
-\item{features}{Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.}
+\item{features}{An optional vector of gene names for which to calculate mean expression.
+If NULL, mean expression is calculated for all genes in the RNA assay.}
 }
 \value{
-A data frame with probe type (Gene or Control), the mean expression values, and the associated sample and platform identifiers.
+A data frame with columns \code{target} (gene or control probe name), \code{value} (mean expression level),
+\code{type} (indicating whether the row represents a Gene or Control), \code{platform}, and \code{sample_id}.
 }
 \description{
 It calculated mean expression per probe.
+}
+\details{
+Computes the mean expression levels for a specified list of features (genes)
+and control probes within a Seurat object. This function separately calculates the mean
+expression for both target genes and control probes, then combines these results into a
+single data frame. If no features are specified, it defaults to all genes in the RNA assay.
 }

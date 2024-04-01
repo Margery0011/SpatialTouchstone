@@ -7,11 +7,16 @@
 getEntropy(seu_obj)
 }
 \arguments{
-\item{seu_obj}{A Seurat object.}
+\item{seu_obj}{A Seurat object containing RNA count data.}
 }
 \value{
-A data frame.
+A data frame with the \code{sample_id}, \code{platform}, and the entropy value of the RNA count matrix, rounded to three decimal places.
 }
 \description{
-getEntropy.
+Computes the entropy of the RNA count matrix within a Seurat object.
+}
+\details{
+Entropy is used to quantify the diversity or uniformity of gene expression across the dataset. This function calculates the entropy of the RNA count matrix, reflecting the distribution of gene expression levels.
+A higher entropy value suggests a more uniform distribution across genes, while a lower value indicates concentration in a smaller number of genes.
+This measure can provide insights into the complexity of the cellular composition and the heterogeneity within the sample.
 }

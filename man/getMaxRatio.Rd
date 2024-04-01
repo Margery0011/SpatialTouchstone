@@ -7,13 +7,22 @@
 getMaxRatio(seu_obj, features = NULL)
 }
 \arguments{
-\item{seu_obj}{seurat object.}
+\item{seu_obj}{A Seurat object including assays for target genes ('RNA')
+and control probes ('ControlProbe').}
 
-\item{features}{Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.}
+\item{features}{An optional vector of gene identifiers for which to perform the calculation. If NULL, the calculation
+includes all genes in the RNA assay.}
 }
 \value{
-A data frame.
+A data frame with \code{sample_id}, \code{platform}, and the calculated \code{value} of the log-ratio.
 }
 \description{
 It calculateds the Log-ratio of highest mean exp vs. mean noise.
+}
+\details{
+The function identifies the maximum mean expression value among the specified features
+(or all features if none are specified) and calculates its log-ratio to the mean expression value
+of negative control probes. This log-ratio reflects the dynamic range of the dataset, indicating
+the spread between the highest signal and background noise levels, which is critical for assessing
+data quality and sensitivity of detection in spatial transcriptomics.
 }

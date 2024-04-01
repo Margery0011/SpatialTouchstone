@@ -7,13 +7,20 @@
 getCellTxFraction(seu_obj, features = NULL)
 }
 \arguments{
-\item{seu_obj}{seurat object.}
+\item{seu_obj}{A Seurat object containing spatial transcriptomics data, expected to include metadata fields for \code{path} and \code{platform} to facilitate reading transcript metadata with \code{readTxMeta}.}
 
-\item{features}{Optional; a vector of gene identifiers for which to perform the calculation. If NULL, all features are used.}
+\item{features}{An optional vector of gene identifiers for which to calculate the transcript fraction. If NULL, the calculation is performed using all available features in the dataset.}
 }
 \value{
+A data frame containing the calculated fraction of transcripts in cells, along with \code{sample_id} and \code{platform} for context. This output provides insight into the efficiency of transcript capture and assignment within the given dataset.
+
 A data frame with probe type (Gene or Control), the mean expression values, and the associated sample and platform identifiers.
 }
 \description{
 It calculates fraction of transcripts in cells.
+}
+\details{
+The function works by reading transcript metadata for the given sample and platform, then filtering for the specified features (if any).
+For each platform, it identifies transcripts that are not assigned to any cell ('UNASSIGNED' for Xenium, 'None' for CosMx, etc.) and calculates the fraction of transcripts that are assigned to cells.
+This metric is an important indicator of the quality of spatial transcriptomics data, reflecting the efficiency of transcript capture and cell assignment.
 }
