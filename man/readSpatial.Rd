@@ -4,7 +4,7 @@
 \alias{readSpatial}
 \title{readSpatial.}
 \usage{
-readSpatial(sample_id, path, platform)
+readSpatial(sample_id, path, platform = NULL, seurat = FALSE)
 }
 \arguments{
 \item{sample_id}{Identifier for the sample being processed.}
@@ -30,11 +30,4 @@ processing cell metadata. For 'Xenium', it adds additional cell metadata and tis
 as an embedding for custom plotting. For 'CosMx', it fixes assays to separate targeting and
 non-targeting probes, adds additional cell metadata, and includes tissue coordinates as an embedding.
 'Merscope' platform support is under development.
-
-Regardless of platform, data is stored in an assay named "RNA" for convenient and for each platform, this table will be used by subsequent functions.
 }
-\examples{
-seu_obj <- readSpatial(sample_id = "sample123", path = "path/to/xenium/data", platform = "Xenium")
-seu_obj <- readSpatial(sample_id = "sample456", path = "path/to/cosmx/data", platform = "CosMx")
-}
-\keyword{readSpatialdata}

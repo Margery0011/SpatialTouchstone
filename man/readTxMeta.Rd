@@ -4,7 +4,7 @@
 \alias{readTxMeta}
 \title{readTxMeta.}
 \usage{
-readTxMeta(path, platform)
+readTxMeta(path, platform, sample_meta = NULL)
 }
 \arguments{
 \item{path}{The file path from which to read the transcriptome metadata.}

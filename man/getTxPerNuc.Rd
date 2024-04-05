@@ -4,7 +4,7 @@
 \alias{getTxPerNuc}
 \title{getTxPerNuc.}
 \usage{
-getTxPerNuc(seu_obj, features = NULL)
+getTxPerNuc(seu_obj = NULL, features = NULL, tx_file = NULL, platform = NULL)
 }
 \arguments{
 \item{seu_obj}{A Seurat object containing spatial transcriptomics data with metadata attributes
@@ -30,10 +30,4 @@ is specific to spatial transcriptomics data where the distinction between nuclea
 transcript localization can be made. The function is designed to work with different platforms by
 reading transcript localization data using a helper function \code{readTxMeta}. If no features are
 specified, the function defaults to using all available genes.
-}
-\examples{
-`seu_obj` is a Seurat object prepared with the necessary metadata
-res <- getTxPerNuc(seu_obj)
-# For specific genes:
-res  <- getTxPerNuc(seu_obj, features = c("GAPDH", "ACTB"))
 }

@@ -4,7 +4,12 @@
 \alias{getMaxDetection}
 \title{getMaxDetection.}
 \usage{
-getMaxDetection(seu_obj, features = NULL)
+getMaxDetection(
+  seu_obj = NULL,
+  features = NULL,
+  expMat = "path_to_expMat",
+  platform = NULL
+)
 }
 \arguments{
 \item{seu_obj}{A Seurat object.}

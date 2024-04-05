@@ -4,7 +4,12 @@
 \alias{getSparsity}
 \title{getSparsity.}
 \usage{
-getSparsity(seu_obj)
+getSparsity(
+  seu_obj = NULL,
+  features = NULL,
+  expMat = "path_to_expMat",
+  platform = NULL
+)
 }
 \arguments{
 \item{seu_obj}{A Seurat object.}

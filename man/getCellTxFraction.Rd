@@ -4,7 +4,12 @@
 \alias{getCellTxFraction}
 \title{getCellTxFraction.}
 \usage{
-getCellTxFraction(seu_obj, features = NULL)
+getCellTxFraction(
+  seu_obj = NULL,
+  features = NULL,
+  tx_file = "path_to_tx",
+  platform = NULL
+)
 }
 \arguments{
 \item{seu_obj}{A Seurat object containing spatial transcriptomics data, expected to include metadata fields for \code{path} and \code{platform} to facilitate reading transcript metadata with \code{readTxMeta}.}

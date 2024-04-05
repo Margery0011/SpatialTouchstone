@@ -4,7 +4,13 @@
 \alias{getGlobalFDR}
 \title{getGlobalFDR}
 \usage{
-getGlobalFDR(seu_obj, features = NULL)
+getGlobalFDR(
+  seu_obj = NULL,
+  features = NULL,
+  tx_file = "path_to_txFile",
+  cellSegMeta = "path_to_cellMeta",
+  platform = NULL
+)
 }
 \arguments{
 \item{seu_obj}{A Seurat object containing spatial data, including a path and platform attribute.}
@@ -23,9 +29,4 @@ Calculate Specificity as Global False Discovery Rate (FDR).
 Computes the global FDR for specified features (or all features by default) in a Seurat object.
 It leverages transcript localization data to calculate FDR based on the proportion of negative control
 or blank barcode expressions compared to the expression of actual genes.
-}
-\examples{
-
-res <- getGlobalFDR(seu_obj)
-res <- getGlobalFDR(seu_obj, features = c("Gene1", "Gene2"))
 }

@@ -4,7 +4,12 @@
 \alias{getEntropy}
 \title{getEntropy.}
 \usage{
-getEntropy(seu_obj)
+getEntropy(
+  seu_obj = NULL,
+  features = NULL,
+  expMat = "path_to_expMat",
+  platform = NULL
+)
 }
 \arguments{
 \item{seu_obj}{A Seurat object containing RNA count data.}

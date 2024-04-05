@@ -4,7 +4,7 @@
 \alias{getMECR}
 \title{getMECR.}
 \usage{
-getMECR(seu_obj)
+getMECR(seu_obj = NULL, expMat = "path_to_expMat", platform = NULL)
 }
 \arguments{
 \item{seu_obj}{A seurat object.}

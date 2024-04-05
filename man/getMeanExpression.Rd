@@ -4,7 +4,12 @@
 \alias{getMeanExpression}
 \title{getMeanExpression.}
 \usage{
-getMeanExpression(seu_obj, features = NULL)
+getMeanExpression(
+  seu_obj = NULL,
+  features = NULL,
+  expMat = "path_to_expMatrix",
+  platform = NULL
+)
 }
 \arguments{
 \item{seu_obj}{A Seurat object.

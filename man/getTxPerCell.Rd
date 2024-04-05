@@ -4,7 +4,12 @@
 \alias{getTxPerCell}
 \title{getTxPerCell.}
 \usage{
-getTxPerCell(seu_obj, features = NULL)
+getTxPerCell(
+  seu_obj = NULL,
+  features = NULL,
+  expMat = "path_to_exprMatrix",
+  platform
+)
 }
 \arguments{
 \item{seu_obj}{A Seurat object with RNA assays. The object must have 'sample_id' and 'platform' metadata attributes for identification

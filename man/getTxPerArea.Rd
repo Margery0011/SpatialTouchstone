@@ -4,7 +4,13 @@
 \alias{getTxPerArea}
 \title{getTxPerArea.}
 \usage{
-getTxPerArea(seu_obj, features = NULL)
+getTxPerArea(
+  seu_obj = NULL,
+  features = NULL,
+  platform,
+  cellSegMeta = "path_to_cellMeta",
+  tx_file = NULL
+)
 }
 \arguments{
 \item{seu_obj}{A Seurat object.
