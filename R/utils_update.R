@@ -1,7 +1,5 @@
-# utils Yutian updated from @Felipe and @David
-
 library(Seurat)
-library(tidyverse)
+library(dplyr)
 library(ggplot2)
 library(shadowtext)
 library(scales)
@@ -13,19 +11,78 @@ library(SingleCellExperiment)
 library(SpatialExperiment)
 library(SpatialFeatureExperiment)
 library(bluster)
-library(NMI)
-library(spacexr)
-library(InSituType)#install.packages("lsa")
 library(BiocParallel)
+library(scales)
 
+#######
+# I/O
+#######
 
+# Functions assume data is stored in specific formats:
+# Xenium: Typical Xenium bundle; CosMx: Flat CSV (TAP style); MERSCOPE: Not implemented yet
+
+#####
 # readSpatial() reads in data from either Xenium, CosMx, of MERSCOPE.
 # It outputs a seurat object with some common metadata e for downstream comparison.
 # Regardless of platform, data is stored in an assay named "RNA" for convenient
 # function
-# David
-readSpatial <- function(sample_id, path, platform){
+# If Seurat = F, then store sample in a list, where each item of the list is a data.table (one for Tx information, one for expression, etc)
+readSpatial <- function(sample_id, path, platform=NULL, seurat=FALSE){
   print(paste0("Reading: ", sample_id))
+
+  # If platform not specified, try to guess which tech it is (from folder name)
+  if(is.null(platform)) {
+    xenium <- grep('*[X-x]enium*|*10x*', sample_id)
+    cosmx <- grep('*[C-c]os[M-m]x*|*[N-n]anostring*', sample_id)
+    mersc <- grep('*[M-m]erscope*|*MERSCOPE*|*[V-v]izgen*',sample_id)
+
+    if(length(xenium) == 0 & length(cosmx) == 0 & length(mersc) == 0) {
+      platform = 'Unknown'
+    }
+
+    if(length(xenium) > 0) { platform = 'Xenium'}
+    if(length(cosmx) > 0) { platform = 'CosMx'}
+    if(length(mersc) > 0) { platform = 'Merscope'}
+  }
+
+  ## Read and store tables as list outside of seurat
+  if(seurat==FALSE) {
+    # create empty list
+    obj_list <- list()
+
+    if(platform == 'Xenium') {
+      obj_list[[sample_id]] <- list()
+      obj_list[[sample_id]][['expMatrix']] <- Matrix::readMM(file.path(path, 'cell_feature_matrix/matrix.mtx.gz'))
+      cols <- data.table::fread(file.path(path, 'cell_feature_matrix/barcodes.tsv.gz'), header = F)
+      rows <- data.table::fread(file.path(path, 'cell_feature_matrix/features.tsv.gz'), header = F)
+      rownames(obj_list[[sample_id]][['expMatrix']]) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+      colnames(obj_list[[sample_id]][['expMatrix']]) <- cols$V1 ## this is the barcodes of cells
+
+      obj_list[[sample_id]][['TxMatrix']] <- data.table::fread(file.path(path, 'transcripts.csv.gz'))
+    }
+
+    if(platform == 'CosMx') {
+      obj_list[[sample_id]] <- list()
+      pattern <- "exprMat_file.csv.gz$|exprMat*"
+      file_name <- list.files(path = path, pattern = pattern, full.names = TRUE)
+      obj_list[[sample_id]][['expMatrix']] <- data.table::fread(file_name)
+      pattern <- "*tx_file.csv.gz$|*tx.csv$|tx_file_unique.csv.gz$"
+      file_name <- list.files(path = path, pattern = pattern, full.names = TRUE)
+      obj_list[[sample_id]][['TxMatrix']] <- data.table::fread(file_name[1])
+    }
+
+    # if(platform == 'Merscope') {
+    #   obj_list[[sample_id]] <- list()
+    #   pattern <- "exprMat_file.csv.gz$"
+    #   file_name <- list.files(path = path, pattern = pattern, full.names = TRUE)
+    #   obj_list[[sample_id]][['expMatrix']] <- data.table::fread(file_name)
+    #   obj_list[[sample_id]][['TxMatrix']] <- data.table::fread(file.path(path, 'transcripts.csv.gz'))
+    # }
+    #
+
+    return(obj_list)
+  }
+
 
   if(platform == "Xenium"){
     print("Loading Xenium data")
@@ -90,16 +147,16 @@ readSpatial <- function(sample_id, path, platform){
     ### Add tissue coordinates as an embedding for custom plotting
     print("Adding tissue coordinates as embedding")
     coords <- data.frame(
-      Tissue_1 = cell_meta$CenterX_global_px,
-      Tissue_2 = cell_meta$CenterY_global_px
+      Tissue_1 = cell_meta$CenterY_global_px,
+      Tissue_2 = cell_meta$CenterX_global_px
     )
     coords <- as.matrix(coords[,1:2])
     colnames(coords) <- c("Tissue_1", "Tissue_2")
     rownames(coords) <- colnames(seu_obj)
-    seu_obj[["tissue"]] <- CreateDimReducObject(coords, key="Tissue_", assay="RNA")
+    seu_obj[["tissue"]] <- CreateDimReducObject(m , key="Tissue_", assay="RNA")
 
 
-  } else if(paltform == "Merscope"){
+  } else if(platform == "Merscope"){
     print("Working on support!")
     stop()
 
@@ -112,17 +169,18 @@ readSpatial <- function(sample_id, path, platform){
   return(seu_obj)
 }
 
-
+#####
 # readTxMeta() simply reads in the transcript localization/metadata table
 # for each platform. This table will be used by subsequent functions
-# Same
-readTxMeta <- function(path, platform){
+readTxMeta <- function(path, platform, sample_meta=NULL){
   if(platform == "Xenium"){
     df <- data.table::fread(file.path(path, "transcripts.csv.gz"))
+    ## change feature_name to target - to keep consistency ##
+    setnames(df, "feature_name", "target")
+
   } else if(platform == "CosMx"){
     df <- data.table::fread(file.path(path,
                                       list.files(path, pattern = "*tx_file.csv.gz")))
-    df <- unique(df)
   } else if(platform == "Merscope"){
     print("Working on support!")
     stop()
@@ -132,52 +190,9 @@ readTxMeta <- function(path, platform){
   }
 }
 
-
-
-######## General Utilities ########
-# David
-getPseudobulk <- function(seu_obj, celltype_meta="cell_type") {
-
-
-  celltype <- factor(seu_obj@meta.data[,celltype_meta])
-  names(celltype) <- colnames(seu_obj)
-  mat <- seu_obj[["RNA"]]$counts
-
-  mat.summary <- do.call(cbind, lapply(levels(celltype), function(s) {
-    cells <- names(celltype)[celltype==s]
-    pseudobulk <- rowMeans(mat[, cells])
-    return(pseudobulk)
-  }))
-  colnames(mat.summary) <- levels(celltype)
-  return(mat.summary)
-}
-
-# Automated annotation of spatial data with single-cell references using InSituType
-# Assumes `ref` is a seurat object with a "cell_type" metadata column--can be overridden
-# NOTE: Currently, annotateData() will remove cells with <10 transcripts
-# so be cautious of the data composition changing slightly
-# David
-annotateData <- function(seu_obj, ref, celltype_meta="cell_type"){
-  print("Getting pseudobulk for reference")
-  ref_mat <- getPseudobulk(ref)
-
-  cells_keep <- colnames(seu_obj)[colSums(seu_obj[["RNA"]]$counts) > 10]
-  seu_obj <- subset(seu_obj, cells = cells_keep)
-
-  query_mat <- seu_obj[["RNA"]]$counts
-
-  print("Annotated spatial data")
-  insitutype_res <- insitutypeML(x = t(query_mat),
-                                 neg = colMeans(seu_obj[["ControlProbe"]]$counts),
-                                 reference_profiles = ref_mat)
-
-  seu_obj$celltype_pred <- insitutype_res$clust
-  return(seu_obj)
-}
-
-
-
-######## QC Metrics ########
+#######
+# QC
+#######
 
 ## number of cells
 getNcells <- function(seu_obj = NULL, expMat = 'path_to_expMat', platform = NULL) {
@@ -194,12 +209,7 @@ getNcells <- function(seu_obj = NULL, expMat = 'path_to_expMat', platform = NULL
     ncell <- ncol(seu_obj)
   }
 
-  res <- data.frame(
-    sample_id = unique(seu_obj$sample_id),
-    platform = unique(seu_obj$platform),
-    value=ncell
-  )
-  return(res)
+  return(ncell)
 
 }
 
@@ -264,6 +274,7 @@ getGlobalFDR <- function(seu_obj = NULL, features = NULL, tx_file ='path_to_txFi
 
 
 
+
 ### Transcripts per cell
 #features can be explicitly defined. Defaults to all targets
 ## expMat = specify where the "cell_feature_matrix" folder is IF Xenium. IF cosmx - path to exp matrix
@@ -310,16 +321,16 @@ getTxPerCell <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_exprMa
       features <- features
     }
 
+
     mean_tx <- mean(colSums(seu_obj[["RNA"]]$counts[features,]))
-    res <- data.frame(
-      sample_id = unique(seu_obj$sample_id),
-      platform = unique(seu_obj$platform),
-      value=mean_tx
-    )
-    return(res)
+    return(mean_tx)
   }
 
 }
+
+
+
+
 ### Transcripts per um2
 ## If features are specified, have to specify where the Tx file is
 getTxPerArea <- function(seu_obj = NULL, features=NULL,
@@ -382,16 +393,111 @@ getTxPerArea <- function(seu_obj = NULL, features=NULL,
 
     tx_count <- colSums(seu_obj[["RNA"]]$counts[features,])
     mean_tx_norm <- mean(tx_count / seu_obj$cell_area)
-    res <- data.frame(
-      sample_id = unique(seu_obj$sample_id),
-      platform = unique(seu_obj$platform),
-      value=mean_tx_norm
-    )
-    return(res)
+
+
+    return(mean_tx_norm)
   }
 
 
 }
+
+### Transcripts per nucleus
+getTxPerNuc <- function(seu_obj=NULL, features=NULL, tx_file = NULL, platform = NULL){
+
+  if(is.null(seu_obj)) {
+    if(platform == 'Xenium') {
+      tx_df <- data.table::fread(tx_file)
+
+      if(is.null(features)) {
+        # subset the tx file with only existing assigned cells and features
+        # remove neg control probes
+        negProbes <- unique(tx_df$feature_name[grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', tx_df$feature_name)])
+        # number of txs in nucleus
+        nTx_nuc <- dim(tx_df[cell_id != 'UNASSIGNED' & overlaps_nucleus == 1 & !feature_name %in% negProbes])[1]
+        # number of cells
+        nCells <- length(unique(tx_df$cell_id))
+      }
+      if(!is.null(features)) {
+        nTx_nuc <- dim(tx_df[cell_id != 'UNASSIGNED' & overlaps_nucleus == 1 & !feature_name %in% negProbes & feature_name %in% features])[1]
+
+      }
+
+
+    }
+
+    if(platform == 'CosMx') {
+      tx_df <- data.table::fread(tx_file)
+
+      if(is.null(features)) {
+        # subset the tx file with only existing assigned cells and features
+        # remove neg control probes
+        negProbes <- unique(tx_df$target[grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', tx_df$target)])
+        # number of txs in nucleus
+        nTx_nuc <- nrow(tx_df[cell_ID != 0 & CellComp == 'Nuclear' & !target %in% negProbes])
+        # number of cells
+        nCells <- length(unique(tx_df$cell[tx_df$cell_ID != 0]))
+      }
+      if(!is.null(features)) {
+        nTx_nuc <- nrow(tx_df[cell_ID != 0 & CellComp == 'Nuclear' & !target %in% negProbes & target %in% features])
+
+      }
+
+    }
+
+    if(platform == 'Merscope') {
+
+    }
+
+    return(nTx_nuc / nCells)
+
+  }
+
+  if(is.null(features)){
+    features <- rownames(seu_obj)
+  } else{
+    features <- features
+  }
+
+  path <- unique(seu_obj$path)
+  platform <- unique(seu_obj$platform)
+
+  # Read Tx localization data
+  tx_df <- readTxMeta(path, platform)
+
+  if(platform == "Xenium"){
+    tx_df <- filter(tx_df, cell_id %in% colnames(seu_obj) &
+                      overlaps_nucleus == 1 &
+                      features %in% features) %>%
+      group_by(cell_id) %>%
+      summarize(nuc_counts = n())
+
+
+  } else if(platform == "CosMx"){
+    tx_df$cell_id <- paste(tx_df$cell_ID, tx_df$fov, sep="_")
+    tx_df <- tx_df %>%
+      filter(cell_id %in% colnames(seu_obj) &
+               CellComp == "Nuclear" &
+               target %in% features) %>%
+      group_by(cell_id) %>%
+      summarize(nuc_counts = n())
+
+  } else if(platform == "Merscope"){
+    print("Working on support")
+
+  } else{
+    print("Platform not supported")
+  }
+
+  res <- data.frame(
+    sample_id = unique(seu_obj$sample_id),
+    platform = unique(seu_obj$platform),
+    value=mean(tx_df$nuc_counts)
+  )
+
+  return(res)
+}
+
+
 ### Per Probe Mean Expression
 # This function will take in a exp matrix or a seurat object, and return a df with average expression per probe,
 # You can specify which genes, or default, all genes.
@@ -520,6 +626,7 @@ getMeanSignalRatio <- function(seu_obj=NULL, features=NULL, platform=NULL, expMa
 
 
 }
+
 ### Fraction of transcripts in cells
 # This function takes in a seurat object or a Tx file and return the fraction of txs in assigned cells compared to total
 getCellTxFraction <- function(seu_obj=NULL, features=NULL, tx_file = 'path_to_tx',
@@ -662,6 +769,7 @@ getMaxRatio <- function(seu_obj = NULL, features=NULL, expMat ='path_to_expMat',
     return(res)
   }
 }
+
 # Distribution of maximal values
 getMaxDetection <- function(seu_obj = NULL, features=NULL, expMat ='path_to_expMat', platform = NULL){
 
@@ -714,6 +822,7 @@ getMaxDetection <- function(seu_obj = NULL, features=NULL, expMat ='path_to_expM
   }
 
 }
+
 ##### Mutually Exclusive Co-expression Rate (MECR) Implementation
 getMECR <- function(seu_obj=NULL, expMat = 'path_to_expMat', platform = NULL) {
   #This function comes from Hartman & Satija, bioRxiv, 2024
@@ -782,15 +891,10 @@ getMECR <- function(seu_obj=NULL, expMat = 'path_to_expMat', platform = NULL) {
   }
 
 
-  res <- data.frame(
-    sample_id = unique(seu_obj$sample_id),
-    platform = unique(seu_obj$platform),
-    value=round(mean(coexp.rates), digits=3)
-  )
-
-  return(res)
+  return(round(mean(coexp.rates), digits=3))
 
 }
+
 ##### Distribution spatial autocorrelation
 getMorans <- function(seu_obj,
                       features=NULL){
@@ -865,6 +969,7 @@ getMorans <- function(seu_obj,
 
   return(res)
 }
+
 ##### Cluster evaluation: silhouette width
 getSilhouetteWidth <- function(seu_obj){
   print("Clustering data")
@@ -972,201 +1077,14 @@ getEntropy <- function(seu_obj=NULL, features = NULL, expMat = 'path_to_expMat',
 
 }
 
-# David
-getRCTD <- function(seu_obj, ref){
-  # Prep reference for RCTD
-  counts <- ref[["RNA"]]$counts
-  cluster <- ref$cell_type
-  cluster <- factor(cluster)
-  names(cluster) <- colnames(ref)
-  nUMI <- ref$nCount_RNA
-  names(nUMI) <- colnames(ref)
-  reference <- Reference(counts, cluster, nUMI)
 
-  # Prep obj
-  # NOTE: If tx counts are low, it will fail.
-  # I've found that subseting to >10 counts tends to work.
-  # Should decide if that's done here or in a separate function
-  print("Filtering any cells with <10 tx counts")
-  seu_obj <- subset(seu_obj, nCount_RNA > 10)
-  counts <- seu_obj[["RNA"]]$counts
-  coords <- GetTissueCoordinates(seu_obj)
-  coords <- filter(coords, cell %in% colnames(seu_obj)) %>%
-    column_to_rownames(var = "cell")
-  colnames(coords) <- c("x", "y")
-  coords[is.na(colnames(coords))] <- NULL
-  query <- SpatialRNA(coords, counts, colSums(counts))
-
-  # Run RCTD in full mode
-  print("Running RCTD")
-  RCTD <- create.RCTD(query, reference, max_cores = 6,
-                      UMI_min = 0, UMI_max = Inf, counts_MIN = 0,
-                      UMI_min_sigma = 50)
-  RCTD <- run.RCTD(RCTD, doublet_mode = "full")
-  RCTD@results$weights <- RCTD@results$weights / rowSums(RCTD@results$weights)
-  return(RCTD)
-  #seu_obj$max_weight <- rowMaxs(RCTD@results$weights)
-
-}
-
-# David
-
-getMaxRCTD <- function(seu_obj, ref){
-  # Prep reference for RCTD
-  counts <- ref[["RNA"]]$counts
-  cluster <- ref$cell_type
-  cluster <- factor(cluster)
-  names(cluster) <- colnames(ref)
-  nUMI <- ref$nCount_RNA
-  names(nUMI) <- colnames(ref)
-  reference <- Reference(counts, cluster, nUMI)
-
-  # Prep obj
-  # NOTE: If tx counts are low, it will fail.
-  # I've found that subseting to >10 counts tends to work.
-  # Should decide if that's done here or in a separate function
-  print("Filtering any cells with <10 tx counts")
-  seu_obj <- subset(seu_obj, nCount_RNA > 10)
-  counts <- seu_obj[["RNA"]]$counts
-  coords <- GetTissueCoordinates(seu_obj)
-  coords <- filter(coords, cell %in% colnames(seu_obj)) %>%
-    column_to_rownames(var = "cell")
-  colnames(coords) <- c("x", "y")
-  coords[is.na(colnames(coords))] <- NULL
-  query <- SpatialRNA(coords, counts, colSums(counts))
-
-  # Run RCTD in full mode
-  print("Running RCTD")
-  RCTD <- create.RCTD(query, reference, max_cores = 6,
-                      UMI_min = 0, UMI_max = Inf, counts_MIN = 0,
-                      UMI_min_sigma = 50)
-  RCTD <- run.RCTD(RCTD, doublet_mode = "full")
-  RCTD@results$weights <- RCTD@results$weights / rowSums(RCTD@results$weights)
-
-  res <- data.frame(
-    sample_id = unique(seu_obj$sample_id),
-    platform = unique(seu_obj$platform),
-    value=round(rowMaxs(RCTD@results$weights), digits=3)
-  )
-
-  return(res)
-}
-
-#Returns data frame with expression levels for both objects for plotting
-# David
-getCorrelationExp <- function(seu_obj, ref){
-  common_genes <- intersect(rownames(seu_obj), rownames(ref))
-  res <- data.frame(
-    sample_id = unique(seu_obj$sample_id),
-    platform = unique(seu_obj$platform),
-    gene = common_genes,
-    value_sample = rowMeans(seu_obj[["RNA"]]$counts[common_genes,]),
-    value_ref = rowMeans(ref[["RNA"]]$counts[common_genes,]),
-    neg_probe_signal = mean(seu_obj[["ControlProbe"]]$counts)
-  )
-  return(res)
-}
-
-#Returns spearman correlation for two objects
-# David
-getCorrelation <- function(seu_obj, ref){
-  common_genes <- intersect(rownames(seu_obj), rownames(ref))
-  cor_res <- cor(
-    rowMeans(seu_obj[["RNA"]]$counts[common_genes,]),
-    rowMeans(ref[["RNA"]]$counts[common_genes,]),
-    method='spearman'
-  )
-  res <- data.frame(
-    sample_id = unique(seu_obj$sample_id),
-    platform = unique(seu_obj$platform),
-    value=cor_res
-  )
-  return(res)
-}
-
-# Gets correlation per cell type
-# Assumes seu_obj has `celltype_pred` and ref has `cell_type`
-# David
-getCellTypeCor <- function(seu_obj, ref){
-  cell_types <- levels(ref$cell_type)
-
-  cor_list <- list()
-  for(i in 1:length(cell_types)){
-    print(paste0("Correlating: ", cell_types[i]))
-    cor_list[[i]] <- getCorrelation(
-      subset(seu_obj, celltype_pred == cell_types[i]),
-      subset(ref, cell_type == cell_types[i])
-    )
-  }
-  cor_list <- do.call(rbind, cor_list)
-  cor_list$cell_type <- cell_types
-  return(cor_list)
-}
-
-
-# Get proportion of cells of a given cell type
-# Assumes seu_obj has `celltype_pred` and ref has `cell_type`
-#David
-getCellTypeProportion <- function(seu_obj, ref){
-  sample_prop <- seu_obj@meta.data %>%
-    mutate(cell_type = seu_obj@meta.data[,"celltype_pred"]) %>%
-    group_by(cell_type) %>%
-    summarize(count = n()) %>%
-    mutate(prop = count / sum(count))
-  ref_prop <- ref@meta.data %>%
-    mutate(cell_type = ref@meta.data[,"cell_type"]) %>%
-    group_by(cell_type) %>%
-    summarize(count = n()) %>%
-    mutate(prop = count / sum(count))
-  sample_prop$group <- "In Situ"
-  ref_prop$group <- "snPATHO"
-  df <- bind_rows(sample_prop, ref_prop)
-  df$sample_id <- unique(seu_obj$sample_id)
-  df$platform <- unique(seu_obj$platform)
-  return(df)
-}
-
-
-# David
-getClusterMetrics <- function(seu_obj, metadata_col){
-  print("Clustering data")
-  seu_obj <- seu_obj %>%
-    NormalizeData() %>%
-    ScaleData()
-
-  VariableFeatures(seu_obj) <- rownames(seu_obj)
-
-  seu_obj <- seu_obj %>%
-    RunPCA(verbose=F) %>%
-    FindNeighbors(dims=1:20) %>%
-    FindClusters(resolution=0.5)
-
-  ari <- bluster::pairwiseRand(seu_obj$seurat_clusters,
-                               seu_obj$celltype_pred,
-                               mode=('index'),
-                               adjusted=TRUE)
-
-  nmi <- NMI(
-    data.frame(cellid = colnames(seu_obj), cluster = seu_obj$seurat_clusters),
-    data.frame(cellid = colnames(seu_obj), cluster = seu_obj$celltype_pred)
-  )
-
-  res <- data.frame(
-    sample_id = unique(seu_obj$sample_id),
-    platform = unique(seu_obj$platform),
-    value=c(ari, nmi$value),
-    metric = c("ARI", "NMI")
-  )
-
-}
-
-######## Plotting ########
-# David
+#######
+# Plotting
+#######
 # All plots assume input is a tidy data frame with the following columns:
 # 1) sample_id
 # 2) platform
 # 3) value (based on what is being plotted--from functions above)
-
 
 plotSampleLabel <- function(sample_meta){
   df <- data.frame(
@@ -1181,31 +1099,31 @@ plotSampleLabel <- function(sample_meta){
   return(p)
 }
 
-plotPanelSize <- function(df){
-  p <- ggplot(df, aes(x="", y=sample_id)) +
-    geom_point(shape=21, color='black', alpha=0.8, stroke=1,
-               aes(size=value, fill=value)) +
-    geom_shadowtext(color = "black", size = 4, #fontface = "bold",
-                    bg.colour = "white", bg.r = .2,
-                    aes(label=scales::comma(value))) +
-    scale_fill_gradientn(colours=viridis::mako(100)) +
-    xlab("Panel size") + ylab("") +
-    scale_size(range = c(6,12)) +
-    scale_x_discrete(position='top',
-                     labels = c("")) +
-    theme_classic() +
-    theme(
-      legend.position='none',
-      axis.text.y = element_blank(),
-      axis.text.x = element_blank(),
-      axis.title.x = element_text(size=12),
-      axis.line.y = element_blank(),
-      axis.ticks.y = element_blank()
-    )
+# plotPanelSize <- function(df){
+#   p <- ggplot(df, aes(x="", y=sample_id)) +
+#     geom_point(shape=21, color='black', alpha=0.8, stroke=1,
+#                aes(size=value, fill=value)) +
+#     geom_shadowtext(color = "black", size = 4, #fontface = "bold",
+#                     bg.colour = "white", bg.r = .2,
+#                     aes(label=scales::comma(value))) +
+#     scale_fill_gradientn(colours=viridis::mako(100)) +
+#     xlab("Panel size") + ylab("") +
+#     scale_size(range = c(6,12)) +
+#     scale_x_discrete(position='top',
+#                      labels = c("")) +
+#     theme_classic() +
+#     theme(
+#       legend.position='none',
+#       axis.text.y = element_blank(),
+#       axis.text.x = element_blank(),
+#       axis.title.x = element_text(size=12),
+#       axis.line.y = element_blank(),
+#       axis.ticks.y = element_blank()
+#     )
+#
+#   return(p)
 
-  return(p)
-
-}
+#}
 
 plotCellCount <- function(df){
   p <- ggplot(df, aes(x="", y=sample_id)) +
@@ -1323,6 +1241,8 @@ plotTxPerCellNorm <- function(df){
   return(p)
 }
 
+#plotTxPerCellIntersect <-
+
 plotFractionTxInCell <- function(df){
   p <- ggplot(df, aes(x=value, y=sample_id)) +
     geom_col(color='black', fill='grey90', stroke=1) +
@@ -1348,25 +1268,25 @@ plotFractionTxInCell <- function(df){
 
 #plotTxPerCell_Intersect <- function()
 
-plotSignalRatio <- function(df){
-  p <- ggplot(df, aes(x=value, y=sample_id)) +
-    geom_col(color='black', fill='grey90') +
-    geom_text(aes(label=scales::comma(value)),
-              hjust = 1, nudge_x = -.05) +
-    xlab("Mean log10-ratio\nexpression over noise") + ylab("") +
-    scale_x_continuous(position='top',
-                       expand = c(0,0)) +
-    theme_classic() +
-    theme(
-      axis.text.y = element_blank(),
-      axis.text.x = element_text(size=10, color="black"),
-      axis.title.x = element_text(size=12),
-      axis.line.y = element_blank(),
-      axis.ticks.y = element_blank()
-    )
+  plotSignalRatio <- function(df){
+    p <- ggplot(df, aes(x=value, y=sample_id)) +
+      geom_col(color='black', fill='grey90') +
+      geom_text(aes(label=scales::comma(value)),
+                hjust = 1, nudge_x = -.05) +
+      xlab("Mean log10-ratio\nexpression over noise") + ylab("") +
+      scale_x_continuous(position='top',
+                         expand = c(0,0)) +
+      theme_classic() +
+      theme(
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size=10, color="black"),
+        axis.title.x = element_text(size=12),
+        axis.line.y = element_blank(),
+        axis.ticks.y = element_blank()
+      )
 
-  return(p)
-}
+    return(p)
+  }
 
 plotMeanExpression <- function(df){
   p <- ggplot(df, aes(x=value, y=sample_id)) +
@@ -1421,7 +1341,7 @@ plotMECR <- function(df){
                     bg.colour = "white", bg.r = .2,
                     aes(label=scales::comma(value))) +
     scale_fill_gradientn(colours=RColorBrewer::brewer.pal(9, "YlOrRd"),
-                         limits=c(0,0.1)) +
+                         limits=c(0.01)) +
     xlab("MECR") + ylab("") +
     scale_size(range = c(7,12), limits = c(0, 0.1)) +
     scale_x_discrete(position='top',
@@ -1483,88 +1403,16 @@ plotSilhouette <- function(df){
   return(p)
 }
 
-plotCorrelation <- function(df){
-  #facet_wrap order is opposite to axis text orders, so we'll flip the levels
-  df$sample_id <- factor(df$sample_id)
-  df$sample_id <- factor(df$sample_id, levels = rev(levels(df$sample_id)))
-  p <- ggplot(df, aes(x=value_ref, y=value_sample)) +
-    geom_point(size=0.5, shape=16, stroke=0, alpha=0.75) +
-    geom_abline(intercept = 0, slope = 1, linetype=2) +
-    scale_x_log10(labels = label_log(digits = 2), limits=c(1e-4, 10),
-                  oob=squish, position='top') +
-    scale_y_log10(labels = label_log(digits = 2), limits=c(1e-4, 10), oob=squish) +
-    xlab("snPATHO-seq\ncorrelation") + ylab("") +
-    facet_wrap(~sample_id, ncol=1) +
-    theme_bw() +
-    theme(axis.text = element_text(size=10, color="black"),
-          legend.position="none",
-          axis.title.x = element_text(size=12),
-          strip.text = element_blank(),
-          strip.background = element_blank())
-  return(p)
-}
-
-plotCellTypeCor <- function(df){
-  p <- ggplot(df, aes(x=value, y = sample_id)) +
-    geom_jitter(shape=21, color='black', aes(fill=cell_type),
-                alpha=0.5, size=3, height=0.1) +
-    stat_summary(fun = mean, geom = "crossbar", width=0.5) +
-    scale_x_continuous(position='top', limits=c(0, 1),
-                       expand=c(0,0), breaks=c(0, 0.5, 1)) +
-    xlab("Cell type\ncorrelation") + ylab("") +
-    theme_classic() +
-    theme(
-      legend.position='none',
-      axis.text.y = element_blank(),
-      axis.text.x = element_text(size=10, color="black"),
-      axis.title.x = element_text(size=12),
-      axis.line.y = element_blank(),
-      axis.ticks.y = element_blank(),
-      plot.margin = margin(5.5, 6.5, 5.5, 5.5, unit='pt')
-    )
-  return(p)
-}
-
-plotCellTypeProportion <- function(df){
-  p <- ggplot(df, aes(x=prop, y=group)) +
-    geom_bar(position="stack", stat="identity",
-             color='black', alpha=0.75,
-             aes(fill=cell_type), width=0.7) +
-    scale_x_continuous(position='top',
-                       limits=c(0,1), expand = c(0,0),
-                       breaks=c(0, 0.5, 1)) +
-    ylab("") + xlab("Cell type\nproportion") +
-    facet_wrap(~sample_id, ncol=1) +
-    theme_classic() +
-    theme(
-      panel.spacing = grid::unit(0, "lines"),
-      strip.background = element_blank(),
-      strip.text = element_blank(),
-      legend.position='none',
-      axis.text.y = element_text(size=10, color="black"),
-      axis.text.x = element_text(size=10, color="black"),
-      axis.title.x = element_text(size=12),
-      axis.line.y = element_blank(),
-      axis.ticks.y = element_blank(),
-      plot.margin = margin(5.5, 6.5, 5.5, 5.5,
-                           unit = "pt")
-    )
-  return(p)
-}
-
-
-plotARI <- function(cluster_metrics){
-  df <- cluster_metrics %>% filter(metric == "ARI")
-
+plotSparsity <- function(df){
   p <- ggplot(df, aes(x="", y=sample_id)) +
     geom_point(shape=21, color='black', alpha=0.8, stroke=1,
                aes(size=value, fill=value)) +
     geom_shadowtext(color = "black", size = 4, #fontface = "bold",
                     bg.colour = "white", bg.r = .2,
-                    aes(label=round(value, digits=2))) +
+                    aes(label=scales::comma(value))) +
     scale_fill_gradientn(colours=viridis::mako(100)) +
-    xlab("ARI") + ylab("") +
-    scale_size(range = c(6,12)) +
+    xlab("Sparsity") + ylab("") +
+    scale_size(range = c(7,12)) +
     scale_x_discrete(position='top',
                      labels = c("")) +
     theme_classic() +
@@ -1572,26 +1420,23 @@ plotARI <- function(cluster_metrics){
       legend.position='none',
       axis.text.y = element_blank(),
       axis.text.x = element_blank(),
-      axis.title.x = element_text(size=12),
+      axis.title.x = element_text(size=10),
       axis.line.y = element_blank(),
       axis.ticks.y = element_blank()
     )
-
   return(p)
 }
 
-plotNMI <- function(cluster_metrics){
-  df <- cluster_metrics %>% filter(metric == "NMI")
-
+plotEntropy <- function(df){
   p <- ggplot(df, aes(x="", y=sample_id)) +
     geom_point(shape=21, color='black', alpha=0.8, stroke=1,
                aes(size=value, fill=value)) +
     geom_shadowtext(color = "black", size = 4, #fontface = "bold",
                     bg.colour = "white", bg.r = .2,
-                    aes(label=round(value, digits=2))) +
+                    aes(label=scales::comma(value))) +
     scale_fill_gradientn(colours=viridis::mako(100)) +
-    xlab("NMI") + ylab("") +
-    scale_size(range = c(6,12)) +
+    xlab("Entropy") + ylab("") +
+    scale_size(range = c(7,12)) +
     scale_x_discrete(position='top',
                      labels = c("")) +
     theme_classic() +
@@ -1599,38 +1444,12 @@ plotNMI <- function(cluster_metrics){
       legend.position='none',
       axis.text.y = element_blank(),
       axis.text.x = element_blank(),
-      axis.title.x = element_text(size=12),
+      axis.title.x = element_text(size=10),
       axis.line.y = element_blank(),
       axis.ticks.y = element_blank()
     )
-
   return(p)
 }
-
-plotRCTD <- function(df){
-  p <- ggplot(df, aes(x=value, y=sample_id)) +
-    geom_boxplot(color="black",
-                 alpha=0.5, outlier.size=0, outlier.colour = NA,
-                 fill="lightgrey", width=0.5) +
-    xlab("Max decomposition\nweight") + ylab("") +
-    scale_x_continuous(position='top', expand = c(0,0),
-                       limits=c(0, 1), breaks=c(0, 0.5, 1),
-                       oob=squish) +
-    #scale_x_log10(position='top', expand = c(0,0),
-    #              labels = label_log(digits = 2)) +
-    theme_classic() +
-    theme(
-      legend.position='none',
-      axis.text.y = element_blank(),
-      axis.text.x = element_text(size=10, color="black"),
-      axis.title.x = element_text(size=12),
-      axis.line.y = element_blank(),
-      axis.ticks.y = element_blank(),
-      plot.margin = margin(5.5, 6.5, 5.5, 5.5, unit='pt')
-    )
-  return(p)
-}
-
 
 
 

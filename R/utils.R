@@ -8,8 +8,10 @@
 globalVariables(c("target", "FDR", "cell_id","overlaps_nucleus","CellComp","platform","value","sample_id","type","samples","column","squish"))
 globalVariables(c(":=", "."))
 
-
-
+#' @title readSpatial.
+#' @description
+#' readSaptial reads in data from either Xenium, CosMx, of MERSCOPE and outputs a seurat object with some common metadata e for downstream comparison.
+#' @details
 #' Reads and preprocesses spatial transcriptomics data from a specified path for a given platform.
 #' The function supports 'Xenium' and 'CosMx' platforms, performing platform-specific loading and
 #' preprocessing steps. This includes loading the data, annotating it with sample metadata, and
@@ -17,11 +19,6 @@ globalVariables(c(":=", "."))
 #' as an embedding for custom plotting. For 'CosMx', it fixes assays to separate targeting and
 #' non-targeting probes, adds additional cell metadata, and includes tissue coordinates as an embedding.
 #' 'Merscope' platform support is under development.
-#' @title readSpatial.
-#' @description
-#' readSaptial reads in data from either Xenium, CosMx, of MERSCOPE and outputs a seurat object with some common metadata e for downstream comparison.
-#' @details
-#' Regardless of platform, data is stored in an assay named "RNA" for convenient and for each platform, this table will be used by subsequent functions.
 #' @param sample_id Identifier for the sample being processed.
 #' @param path The file path from which to load the spatial transcriptomics data.
 #' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
@@ -31,13 +28,64 @@ globalVariables(c(":=", "."))
 #'         structure and content of the returned object vary depending on the platform.
 #' @importFrom Seurat CreateSeuratObject
 #' @importFrom data.table fread
-#' @examples
-#' seu_obj <- readSpatial(sample_id = "sample123", path = "path/to/xenium/data", platform = "Xenium")
-#' seu_obj <- readSpatial(sample_id = "sample456", path = "path/to/cosmx/data", platform = "CosMx")
 #' @export
-#' @keywords readSpatialdata
-readSpatial <- function(sample_id, path, platform){
+readSpatial <- function(sample_id, path, platform=NULL, seurat=FALSE){
   print(paste0("Reading: ", sample_id))
+
+  # If platform not specified, try to guess which tech it is (from folder name)
+  if(is.null(platform)) {
+    xenium <- grep('*[X-x]enium*|*10x*', sample_id)
+    cosmx <- grep('*[C-c]os[M-m]x*|*[N-n]anostring*', sample_id)
+    mersc <- grep('*[M-m]erscope*|*MERSCOPE*|*[V-v]izgen*',sample_id)
+
+    if(length(xenium) == 0 & length(cosmx) == 0 & length(mersc) == 0) {
+      platform = 'Unknown'
+    }
+
+    if(length(xenium) > 0) { platform = 'Xenium'}
+    if(length(cosmx) > 0) { platform = 'CosMx'}
+    if(length(mersc) > 0) { platform = 'Merscope'}
+  }
+
+  ## Read and store tables as list outside of seurat
+  if(seurat==FALSE) {
+    # create empty list
+    obj_list <- list()
+
+    if(platform == 'Xenium') {
+      obj_list[[sample_id]] <- list()
+      obj_list[[sample_id]][['expMatrix']] <- Matrix::readMM(file.path(path, 'cell_feature_matrix/matrix.mtx.gz'))
+      cols <- data.table::fread(file.path(path, 'cell_feature_matrix/barcodes.tsv.gz'), header = F)
+      rows <- data.table::fread(file.path(path, 'cell_feature_matrix/features.tsv.gz'), header = F)
+      rownames(obj_list[[sample_id]][['expMatrix']]) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+      colnames(obj_list[[sample_id]][['expMatrix']]) <- cols$V1 ## this is the barcodes of cells
+
+      obj_list[[sample_id]][['TxMatrix']] <- data.table::fread(file.path(path, 'transcripts.csv.gz'))
+    }
+
+    if(platform == 'CosMx') {
+      obj_list[[sample_id]] <- list()
+      pattern <- "exprMat_file.csv.gz$|exprMat*"
+      file_name <- list.files(path = path, pattern = pattern, full.names = TRUE)
+      obj_list[[sample_id]][['expMatrix']] <- data.table::fread(file_name)
+      pattern <- "*tx_file.csv.gz$|*tx.csv$|tx_file_unique.csv.gz$"
+      file_name <- list.files(path = path, pattern = pattern, full.names = TRUE)
+      obj_list[[sample_id]][['TxMatrix']] <- data.table::fread(file_name[1])
+    }
+
+    # if(platform == 'Merscope') {
+    #   obj_list[[sample_id]] <- list()
+    #   pattern <- "exprMat_file.csv.gz$"
+    #   file_name <- list.files(path = path, pattern = pattern, full.names = TRUE)
+    #   obj_list[[sample_id]][['expMatrix']] <- data.table::fread(file_name)
+    #   obj_list[[sample_id]][['TxMatrix']] <- data.table::fread(file.path(path, 'transcripts.csv.gz'))
+    # }
+    #
+
+    return(obj_list)
+  }
+
+
   if(platform == "Xenium"){
     print("Loading Xenium data")
     seu_obj <- LoadXenium(path, assay = "RNA")
@@ -107,7 +155,7 @@ readSpatial <- function(sample_id, path, platform){
     coords <- as.matrix(coords[,1:2])
     colnames(coords) <- c("Tissue_1", "Tissue_2")
     rownames(coords) <- colnames(seu_obj)
-    seu_obj[["tissue"]] <- CreateDimReducObject(coords, key="Tissue_", assay="RNA")
+    seu_obj[["tissue"]] <- CreateDimReducObject(m , key="Tissue_", assay="RNA")
 
 
   } else if(platform == "Merscope"){
@@ -162,6 +210,28 @@ readTxMeta <- function(path, platform){
 
 #######
 # QC
+
+
+## number of cells
+#' @title getNcells
+getNcells <- function(seu_obj = NULL, expMat = 'path_to_expMat', platform = NULL) {
+  if(is.null(seu_obj)) {
+    if(platform == 'Xenium') {
+      ncell <- ncol(Matrix::readMM(file.path(expMat, 'matrix.mtx.gz')))
+    }
+    if(platform == 'CosMx') {
+      ncell <- nrow(data.table::fread(expMat))
+    }
+  }
+
+  if(!is.null(seu_obj)) {
+    ncell <- ncol(seu_obj)
+  }
+
+  return(ncell)
+
+}
+
 #######
 #' @details
 #' Computes the global FDR for specified features (or all features by default) in a Seurat object.
@@ -178,10 +248,6 @@ readTxMeta <- function(path, platform){
 #' @importFrom Seurat CreateSeuratObject
 #' @return A data frame with columns for sample_id, platform, and the
 #' calculated mean FDR across the specified features.
-#' @examples
-#'
-#' res <- getGlobalFDR(seu_obj)
-#' res <- getGlobalFDR(seu_obj, features = c("Gene1", "Gene2"))
 getGlobalFDR <- function(seu_obj, features=NULL) {
   if(is.null(features)){
     features <- rownames(seu_obj)
@@ -316,12 +382,6 @@ getTxPerArea <- function(seu_obj,
 #' @return A data frame with the columns: `sample_id`, `platform`, and `value`, where `value` represents
 #'         the mean number of transcripts per nucleus across the specified features for the dataset.
 #'         This provides a focused view of nuclear gene expression.
-#'
-#' @examples
-#' `seu_obj` is a Seurat object prepared with the necessary metadata
-#' res <- getTxPerNuc(seu_obj)
-#' # For specific genes:
-#' res  <- getTxPerNuc(seu_obj, features = c("GAPDH", "ACTB"))
 #' @export
 #' @import Seurat
 #' @importFrom dplyr filter group_by summarize
@@ -805,7 +865,7 @@ getSilhouetteWidth <- function(seu_obj){
 ##### Sparsity calculation #####
 #Show the sparsity (as a count or proportion) of a matrix.
 #For example, .99 sparsity means 99% of the values are zero. Similarly, a sparsity of 0 means the matrix is fully dense.
-#' @title getSparsity.
+#' @title  getSparsity.
 #' @description
 #' It shows the sparsity (as a count or proportion) of a matrix.
 #' @details
