@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{plotMaxExpression}
 \alias{plotMaxExpression}
-\title{plotMaxExpression.}
+\title{plotMaxExpression}
 \usage{
 plotMaxExpression(df)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{Data frame with \code{sample_id}, \code{value}, and \code{platform} columns.}
 }
 \value{
-A ggplot object.
+A ggplot object illustrating maximal gene detection rates per cell, differentiated by platform.
 }
 \description{
-plotMaxExpression.
+Creates a jitter and boxplot showing the maximal gene detection rate per cell across samples and platforms.
 }

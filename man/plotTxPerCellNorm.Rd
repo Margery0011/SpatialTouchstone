@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{plotTxPerCellNorm}
 \alias{plotTxPerCellNorm}
-\title{plotTxPerCellNorm.}
+\title{plotTxPerCellNorm}
 \usage{
 plotTxPerCellNorm(df)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{Data frame with \code{sample_id} and normalized \code{value} columns.}
 }
 \value{
-A ggplot object.
+A ggplot object visualizing normalized transcripts per cell for each sample.
 }
 \description{
-plotTxPerCellNorm.
+Creates a plot visualizing normalized transcripts per cell across samples.
 }

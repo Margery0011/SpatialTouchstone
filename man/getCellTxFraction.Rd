@@ -8,13 +8,21 @@ getCellTxFraction(
   seu_obj = NULL,
   features = NULL,
   tx_file = "path_to_tx",
-  platform = NULL
+  platform = NULL,
+  path
 )
 }
 \arguments{
 \item{seu_obj}{A Seurat object containing spatial transcriptomics data, expected to include metadata fields for \code{path} and \code{platform} to facilitate reading transcript metadata with \code{readTxMeta}.}
 
 \item{features}{An optional vector of gene identifiers for which to calculate the transcript fraction. If NULL, the calculation is performed using all available features in the dataset.}
+
+\item{tx_file}{Path to transcription file.}
+
+\item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+and 'Merscope'. Note: 'Merscope' is currently not supported.}
+
+\item{path}{path}
 }
 \value{
 A data frame containing the calculated fraction of transcripts in cells, along with \code{sample_id} and \code{platform} for context. This output provides insight into the efficiency of transcript capture and assignment within the given dataset.

@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{plotMorans}
 \alias{plotMorans}
-\title{plotMorans.}
+\title{plotMorans}
 \usage{
 plotMorans(df)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{Data frame with \code{sample_id}, \code{value}, and \code{type} columns for Moran's I values and sample types.}
 }
 \value{
-A ggplot object.
+A ggplot object depicting Moran's I spatial autocorrelation values, differentiated by sample type.
 }
 \description{
-plotMorans.
+Creates a plot for Moran's I spatial autocorrelation values across samples.
 }

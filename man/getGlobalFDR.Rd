@@ -8,7 +8,6 @@ getGlobalFDR(
   seu_obj = NULL,
   features = NULL,
   tx_file = "path_to_txFile",
-  cellSegMeta = "path_to_cellMeta",
   platform = NULL
 )
 }
@@ -17,6 +16,11 @@ getGlobalFDR(
 
 \item{features}{An optional vector of feature names (gene names) for which to calculate the FDR.
 If NULL (default), FDR is calculated for all features in the seu_obj.}
+
+\item{tx_file}{Path to transcription file.}
+
+\item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+and 'Merscope'. Note: 'Merscope' is currently not supported.}
 }
 \value{
 A data frame with columns for sample_id, platform, and the

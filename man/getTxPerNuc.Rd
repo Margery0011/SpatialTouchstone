@@ -4,7 +4,7 @@
 \alias{getTxPerNuc}
 \title{getTxPerNuc.}
 \usage{
-getTxPerNuc(seu_obj = NULL, features = NULL, tx_file = NULL, platform = NULL)
+getTxPerNuc(seu_obj, features = NULL)
 }
 \arguments{
 \item{seu_obj}{A Seurat object containing spatial transcriptomics data with metadata attributes

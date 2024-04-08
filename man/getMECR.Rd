@@ -8,6 +8,11 @@ getMECR(seu_obj = NULL, expMat = "path_to_expMat", platform = NULL)
 }
 \arguments{
 \item{seu_obj}{A seurat object.}
+
+\item{expMat}{Path to exprMatrix file.}
+
+\item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+and 'Merscope'. Note: 'Merscope' is currently not supported.}
 }
 \value{
 A data frame containing the \code{sample_id}, \code{platform}, and the computed

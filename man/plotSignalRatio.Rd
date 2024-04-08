@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{plotSignalRatio}
 \alias{plotSignalRatio}
-\title{plotSignalRatio.}
+\title{plotSignalRatio}
 \usage{
 plotSignalRatio(df)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{Data frame with \code{sample_id} and \code{value} columns indicating the mean log10-ratio of expression over noise.}
 }
 \value{
-A ggplot object.
+A ggplot object visualizing the signal-to-noise ratio for each sample.
 }
 \description{
-plotSignalRatio.
+Creates a bar plot for the signal-to-noise ratio of gene expression across samples.
 }

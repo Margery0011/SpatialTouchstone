@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{plotTxPerNuc}
 \alias{plotTxPerNuc}
-\title{plotTxPerNuc.}
+\title{Plot Transcripts Per Nucleus}
 \usage{
 plotTxPerNuc(df)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{Data frame with \code{sample_id} and \code{value} columns for sample IDs and the number of transcripts per nucleus, respectively.}
 }
 \value{
-A ggplot object.
+A ggplot object illustrating the transcripts count per nucleus across samples.
 }
 \description{
-plotTxPerNuc.
+Produces a scatter plot that displays the number of transcripts per nucleus for each sample.
 }

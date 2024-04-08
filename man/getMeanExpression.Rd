@@ -17,6 +17,11 @@ This object must have an RNA assay for target genes and a ControlProbe assay for
 
 \item{features}{An optional vector of gene names for which to calculate mean expression.
 If NULL, mean expression is calculated for all genes in the RNA assay.}
+
+\item{expMat}{Path to exprMatrix file.}
+
+\item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+and 'Merscope'. Note: 'Merscope' is currently not supported.}
 }
 \value{
 A data frame with columns \code{target} (gene or control probe name), \code{value} (mean expression level),

@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{plotTxPerCell}
 \alias{plotTxPerCell}
-\title{plotTxPerCell.}
+\title{plotTxPerCell}
 \usage{
 plotTxPerCell(df)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{Data frame with \code{sample_id} and \code{value} columns indicating sample IDs and the number of transcripts per cell, respectively.}
 }
 \value{
-A ggplot object.
+A ggplot object visualizing the number of transcripts per cell for each sample.
 }
 \description{
-plotTxPerCell.
+Creates a scatter plot visualizing the number of transcripts per cell across samples.
 }

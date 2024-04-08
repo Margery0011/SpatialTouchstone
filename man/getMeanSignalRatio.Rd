@@ -4,12 +4,7 @@
 \alias{getMeanSignalRatio}
 \title{getMeanSignalRatio.}
 \usage{
-getMeanSignalRatio(
-  seu_obj = NULL,
-  features = NULL,
-  platform = NULL,
-  expMat = "path_to_expMat"
-)
+getMeanSignalRatio(seu_obj, features = NULL)
 }
 \arguments{
 \item{seu_obj}{A Seurat object, expected to have both 'RNA' and 'ControlProbe'

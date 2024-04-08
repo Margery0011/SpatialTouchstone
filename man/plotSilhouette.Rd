@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{plotSilhouette}
 \alias{plotSilhouette}
-\title{plotSilhouette.}
+\title{plotSilhouette}
 \usage{
 plotSilhouette(df)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{Data frame with \code{sample_id} and \code{value} columns for mean silhouette width values.}
 }
 \value{
-A ggplot object.
+A ggplot object visualizing mean silhouette width for each sample.
 }
 \description{
-plotSilhouette.
+Generates a bar plot showing mean silhouette width values for clustering quality across samples.
 }

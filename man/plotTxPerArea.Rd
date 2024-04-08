@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{plotTxPerArea}
 \alias{plotTxPerArea}
-\title{plotTxPerArea.}
+\title{plotTxPerArea}
 \usage{
 plotTxPerArea(df)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{Data frame with \code{sample_id} and \code{value} columns indicating sample IDs and the number of transcripts per unit area, respectively.}
 }
 \value{
-A ggplot object.
+A ggplot object depicting the distribution of transcripts per unit area for each sample.
 }
 \description{
-plotTxPerArea.
+Generates a scatter plot to show the number of transcripts per unit area across samples.
 }

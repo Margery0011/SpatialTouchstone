@@ -1,5 +1,5 @@
 Package: SpatiaTouchstone
-Title: MultiQC for spatialdata across 
+Title: MultiQC for spatialdata across platform
 Version: 0.0.0.9000
 Authors@R: 
     c(person("Felipe", "Dezem-Segato",role = c("aut", "cre"),email="felipe.segatodezem@stjude.org"),
@@ -26,9 +26,21 @@ Imports:
     BioQC,
     coop,
     RColorBrewer,
-    stringr,
     viridis,
     BiocParallel,
-    shadowtext
+    spacexr,
+    Matrix,
+    tibble,
+    NMI,
+    InSituType,
+    magrittr,
+    lsa
 URL: https://github.com/Margery0011/SpatiaTouchstone
 BugReports: https://github.com/Margery0011/SpatiaTouchstone/issues
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    R.utils
+Config/testthat/edition: 3
+VignetteBuilder: knitr

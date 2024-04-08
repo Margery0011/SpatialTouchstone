@@ -4,7 +4,7 @@
 \alias{readTxMeta}
 \title{readTxMeta.}
 \usage{
-readTxMeta(path, platform, sample_meta = NULL)
+readTxMeta(path, platform)
 }
 \arguments{
 \item{path}{The file path from which to read the transcriptome metadata.}
@@ -19,12 +19,11 @@ No return value for 'Merscope' as it stops execution with an error message.
 }
 \description{
 It reads in the transcript localization/metadata table.
+For each platform, This table will be used by subsequent functions.
 }
 \details{
-This function reads transcriptome metadata from a specified path, depending on the platform specified.
+#' This function reads transcriptome metadata from a specified path, depending on the platform specified.
 Currently supports 'Xenium' and 'CosMx' platforms. For 'Xenium', it reads 'transcripts.csv.gz' and renames
 the 'feature_name' column to 'target' for consistency. For 'CosMx', it reads the appropriate transcriptome
 file matched by '*tx_file.csv.gz'. 'Merscope' platform support is under development.
-
-For each platform, This table will be used by subsequent functions.
 }

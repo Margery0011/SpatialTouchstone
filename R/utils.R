@@ -1,12 +1,142 @@
 
-#######
-# I/O
-#######
+globalVariables(c("target", "celltype_pred", "cell_type", "FDR", "nCount_RNA", "cell_area", "cell_ID", "Area.um2", "metric","platform","value","cell","cor","sample_id","value_ref","group","prop","squish","type"))
+
+#' @importFrom magrittr %>%
+NULL
+#' Compute various metrics for a given set of samples
+#' This function processes a data.frame containing sample information, including paths to necessary files, and computes a variety of metrics for each sample.
+#' The required metrics include the number of cells, specificity FDR, number of transcripts per cell, transcripts per area of segmented cell, transcripts per nucleus,
+#' signal to noise ratio, fraction of transcripts in segmented cells, Mutually Exclusive Co-Expression Rate (MECR), sparsity, and Shannon entropy.
+#' The data frame must include the columns: sample_id, platform, expMat, tx_file, and cell_meta.
+#' @title getAllMetrics
+#' @param df_samples A data.frame that must contain the following columns:
+#' \itemize{
+#'   \item{sample_id}{Unique identifier for each sample.}
+#'   \item{platform}{The platform used, either "Xenium" or "CosMx".}
+#'   \item{expMat}{Path to the expression matrix file. For Xenium platform, this should be a path to the cell_feature_matrix folder.}
+#'   \item{tx_file}{Path to the transcript file.}
+#'   \item{cell_meta}{Path to the cell metadata file.}
+#' }
+#' @return A modified version of df_samples with the computed metrics added as new columns.
+#' @export
+getAllMetrics <- function(df_samples) {
+
+  gStartTime <- Sys.time()
+
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating number of cells ")
+    df_samples$nCells <- NA
+    df_samples$nCells <- mapply(getNcells, expMat = df_samples$expMat, platform = df_samples$platform)
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
+
+
+  # Specificity
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating Specificity ")
+    df_samples$specificityFDR <- NA
+    df_samples$specificityFDR <- mapply(getGlobalFDR, tx_file = df_samples$tx_file, platform = df_samples$platform, cellSegMeta =  df_samples$cell_meta)
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
+
+
+  # Tx per Cell
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating number of transcripts per cell ")
+    df_samples$TxPerCell <- NA
+    df_samples$TxPerCell <- mapply(getTxPerCell, expMat = df_samples$expMat, platform = df_samples$platform)
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
+
+
+  # Tx per Area
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating number transcripts per area of segmented cell ")
+    df_samples$TxPerArea <- NA
+    df_samples$TxPerArea <- mapply(getTxPerArea, platform = df_samples$platform, cellSegMeta =  df_samples$cell_meta)
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
+
+  # Tx per Nucleus
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating number transcripts per nuclei ")
+    df_samples$TxPerNuc <- NA
+    df_samples$TxPerNuc <- mapply(getTxPerNuc, tx_file = df_samples$tx_file, platform = df_samples$platform)
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
+
+
+  # Signal to noise ratio
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating signal to noise ratio ")
+    df_samples$SigNoiseRatio <- NA
+    df_samples$SigNoiseRatio <- mapply(getMeanSignalRatio, expMat = df_samples$expMat, platform = df_samples$platform)
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
+
+
+  # Fraction of txs in cells
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating fraction of transcripts in segmented cells ")
+    df_samples$CellTxFraction <- NA
+    df_samples$CellTxFraction <- mapply(getCellTxFraction, tx_file = df_samples$tx_file, platform = df_samples$platform)
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
 
 
 
-globalVariables(c("target", "FDR", "cell_id","overlaps_nucleus","CellComp","platform","value","sample_id","type","samples","column","squish"))
-globalVariables(c(":=", "."))
+  # MECR
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating MECR (Mutually Exclusive Co-Expression Rate) ")
+    df_samples$MECR <- NA
+    df_samples$MECR <- mapply(getMECR, expMat = df_samples$expMat, platform = df_samples$platform)
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
+
+  # Sparsity
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating sparsity ")
+    df_samples$sparsity <- NA
+    df_samples$sparsity <- mapply(getSparsity, expMat = df_samples$expMat, platform = df_samples$platform)
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
+
+
+  # Entropy
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating Shannon entropy ")
+    df_samples$entropy <- NA
+    df_samples$entropy <- mapply(getEntropy, expMat = df_samples$expMat, platform = df_samples$platform)
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
+
+
+  gEndTime <- Sys.time()
+  print(paste0("total time: ", round(gEndTime - gStartTime , digits = 2) ))
+  return(df_samples)
+
+}
+
 
 #' @title readSpatial.
 #' @description
@@ -21,6 +151,7 @@ globalVariables(c(":=", "."))
 #' 'Merscope' platform support is under development.
 #' @param sample_id Identifier for the sample being processed.
 #' @param path The file path from which to load the spatial transcriptomics data.
+#' @param seurat Return a seurat object or not.
 #' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
 #'        and 'Merscope'. Note: 'Merscope' is currently not supported.
 ##' @return Returns a Seurat object containing the loaded and processed spatial transcriptomics data,
@@ -172,15 +303,16 @@ readSpatial <- function(sample_id, path, platform=NULL, seurat=FALSE){
 }
 
 
-#' This function reads transcriptome metadata from a specified path, depending on the platform specified.
-#' Currently supports 'Xenium' and 'CosMx' platforms. For 'Xenium', it reads 'transcripts.csv.gz' and renames
-#' the 'feature_name' column to 'target' for consistency. For 'CosMx', it reads the appropriate transcriptome
-#' file matched by '*tx_file.csv.gz'. 'Merscope' platform support is under development.
 #' @title readTxMeta.
 #' @description
 #'  It reads in the transcript localization/metadata table.
+#'  For each platform, This table will be used by subsequent functions.
 #' @details
-#' For each platform, This table will be used by subsequent functions.
+#' #' This function reads transcriptome metadata from a specified path, depending on the platform specified.
+#' Currently supports 'Xenium' and 'CosMx' platforms. For 'Xenium', it reads 'transcripts.csv.gz' and renames
+#' the 'feature_name' column to 'target' for consistency. For 'CosMx', it reads the appropriate transcriptome
+#' file matched by '*tx_file.csv.gz'. 'Merscope' platform support is under development.
+#'
 #' @param path The file path from which to read the transcriptome metadata.
 #' @param platform  The platform for which the transcriptome metadata is being read. Valid options are
 #'        'Xenium', 'CosMx', and 'Merscope'. Note: 'Merscope' is currently not supported.
@@ -189,16 +321,13 @@ readSpatial <- function(sample_id, path, platform=NULL, seurat=FALSE){
 #'         No return value for 'Merscope' as it stops execution with an error message.
 #' @export
 #' @importFrom data.table fread setnames
-
 readTxMeta <- function(path, platform){
   if(platform == "Xenium"){
     df <- data.table::fread(file.path(path, "transcripts.csv.gz"))
-    ## change feature_name to target - to keep consistency ##
-    data.table::setnames(df, "feature_name", "target")
-
   } else if(platform == "CosMx"){
     df <- data.table::fread(file.path(path,
-                                   list.files(path, pattern = "*tx_file.csv.gz")))
+                                      list.files(path, pattern = "*tx_file.csv.gz")))
+    df <- unique(df)
   } else if(platform == "Merscope"){
     print("Working on support!")
     stop()
@@ -208,12 +337,102 @@ readTxMeta <- function(path, platform){
   }
 }
 
-#######
-# QC
+
+######## General Utilities ########
+
+#' @title getPseudobulk
+#' @description
+#'  Create pseudobulk expression matrices from single-cell RNA-seq data
+#' @details
+#' This function generates pseudobulk expression matrices by averaging the expression levels of cells within the same cell type.
+#' It takes a Seurat object as input, along with a specification for the metadata column that defines cell types.
+#' Each column in the output matrix represents a cell type, with row names corresponding to genes and cell counts averaged across cells of the same type.
+#'
+#' @param seu_obj A Seurat object containing single-cell RNA-seq data.
+#' The object must have a counts matrix in the "RNA" assay and metadata that includes cell type annotations.
+#' @param celltype_meta A string specifying the name of the metadata column in the Seurat object that contains cell type annotations.
+#' Defaults to "cell_type".
+#'
+#' @return A matrix where each column represents a pseudobulk sample (averaged expression levels) for a specific cell type.
+#' Row names correspond to genes.
+
+getPseudobulk <- function(seu_obj, celltype_meta="cell_type") {
 
 
-## number of cells
+  celltype <- factor(seu_obj@meta.data[,celltype_meta])
+  names(celltype) <- colnames(seu_obj)
+  mat <- seu_obj[["RNA"]]$counts
+
+  mat.summary <- do.call(cbind, lapply(levels(celltype), function(s) {
+    cells <- names(celltype)[celltype==s]
+    pseudobulk <- rowMeans(mat[, cells])
+    return(pseudobulk)
+  }))
+  colnames(mat.summary) <- levels(celltype)
+  return(mat.summary)
+}
+
+
+
+#' @title annotateData
+#' @param seu_obj A Seurat object containing spatial transcriptomics data that you wish to annotate.
+#' @param ref A Seurat object serving as the reference, containing single-cell RNA-seq data with cell type annotations.
+#' @param celltype_meta A string specifying the name of the metadata column in the reference Seurat object that contains cell type annotations.
+#' Defaults to "cell_type".
+#'
+#' @return The input Seurat object (`seu_obj`) with an additional metadata column (`celltype_pred`) containing the cell type predictions.
+#' @description
+#' Automates the annotation of spatial transcriptomics data using reference single-cell RNA-seq data.
+#' It filters cells based on transcript counts and employs a machine learning model for cell type prediction.
+#'
+#' @details
+#' `annotateData` leverages the power of single-cell reference data to annotate spatial transcriptomics data.
+#' This approach is particularly useful in studies aiming to understand tissue composition and cellular localization
+#' without the need for extensive manual annotation. The function requires the input spatial data (`seu_obj`) to be in
+#' Seurat format and a similarly formatted single-cell RNA-seq dataset (`ref`) as a reference. The reference must contain
+#' a cell type annotation column, which can be specified using the `celltype_meta` parameter. The function emphasizes the
+#' importance of data pre-processing, as cells with low transcript counts are removed to improve the accuracy of the cell
+#' type predictions made by the `insitutypeML` algorithm.
+#' @importFrom InSituType insitutypeML
+#' @export
+
+
+annotateData <- function(seu_obj, ref, celltype_meta="cell_type"){
+  print("Getting pseudobulk for reference")
+  ref_mat <- getPseudobulk(ref)
+
+  cells_keep <- colnames(seu_obj)[colSums(seu_obj[["RNA"]]$counts) > 10]
+  seu_obj <- subset(seu_obj, cells = cells_keep)
+
+  query_mat <- seu_obj[["RNA"]]$counts
+
+  print("Annotated spatial data")
+  insitutype_res <- InSituType :: insitutypeML(x = t(query_mat),
+                                 neg = colMeans(seu_obj[["ControlProbe"]]$counts),
+                                 reference_profiles = ref_mat)
+
+  seu_obj$celltype_pred <- insitutype_res$clust
+  return(seu_obj)
+}
+
+######## QC Metrics ########
+
+
 #' @title getNcells
+#' @description
+#' Calculates the number of cells present in a given dataset, supporting both Seurat object input and direct matrix file paths for platforms like Xenium and CosMx.
+#' @details
+#' The function `getNcells` offers flexibility in determining cell counts, catering to different types of input. For `Xenium` platform datasets, it expects the path to a 'matrix.mtx.gz'
+#' file within the specified `expMat` directory and calculates the number of cells by reading the column count of this sparse matrix. For `CosMx` datasets, it reads a CSV file specified by `expMat`,
+#' calculating cell count based on the number of rows. This approach allows for integration into workflows that may start with raw data files or pre-processed Seurat objects, facilitating versatile
+#' data handling practices in transcriptomic analyses.
+#' @param seu_obj Optional; a Seurat object from which to calculate the number of cells. If not provided, `expMat` must be specified.
+#' @param expMat A character string specifying the path to the expression matrix if `seu_obj` is not provided. This parameter is used in conjunction with `platform` to determine the method for reading the data.
+#' @param platform Optional; specifies the platform ('Xenium' or 'CosMx') if `expMat` is used. Required if `expMat` is provided without `seu_obj`.
+#' @return An integer indicating the total number of cells in the dataset.
+#' @importFrom Matrix readMM
+#' @importFrom data.table fread
+
 getNcells <- function(seu_obj = NULL, expMat = 'path_to_expMat', platform = NULL) {
   if(is.null(seu_obj)) {
     if(platform == 'Xenium') {
@@ -232,7 +451,8 @@ getNcells <- function(seu_obj = NULL, expMat = 'path_to_expMat', platform = NULL
 
 }
 
-#######
+
+
 #' @details
 #' Computes the global FDR for specified features (or all features by default) in a Seurat object.
 #' It leverages transcript localization data to calculate FDR based on the proportion of negative control
@@ -243,23 +463,45 @@ getNcells <- function(seu_obj = NULL, expMat = 'path_to_expMat', platform = NULL
 #' @param seu_obj A Seurat object containing spatial data, including a path and platform attribute.
 #' @param features An optional vector of feature names (gene names) for which to calculate the FDR.
 #'        If NULL (default), FDR is calculated for all features in the seu_obj.
+#' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+#'        and 'Merscope'. Note: 'Merscope' is currently not supported.
+#' @param tx_file Path to transcription file.
 #' @export
 #' @importFrom data.table fread .N
 #' @importFrom Seurat CreateSeuratObject
 #' @return A data frame with columns for sample_id, platform, and the
 #' calculated mean FDR across the specified features.
-getGlobalFDR <- function(seu_obj, features=NULL) {
-  if(is.null(features)){
-    features <- rownames(seu_obj)
-  } else{
-    features <- features
+getGlobalFDR <- function(seu_obj = NULL, features = NULL, tx_file ='path_to_txFile',platform = NULL) {
+
+  if(is.null(seu_obj)) {
+    tx_df <- data.table::fread(tx_file)
+
+    if(platform == 'Xenium') {
+      setnames(tx_df, "feature_name", "target") ## changing the colname to target to keep it consistent for all techs
+    }
+
+    if(platform == 'CosMx') {
+      tx_df <- data.table::fread(tx_file)
+
+    }
+
+    if(platform == 'Merscope') {
+
+    }
   }
 
-  path <- unique(seu_obj$path)
-  platform <- unique(seu_obj$platform)
 
-  # Read Tx localization data
-  tx_df <- readTxMeta(path, platform)
+  if(!is.null(seu_obj)) {
+    ## Obj seurat should have a column in @meta.data with path to Tx file
+    path <- unique(seu_obj$path)
+    # same for Platform
+    platform <- unique(seu_obj$platform)
+
+    # Read Tx localization data
+    tx_df <- readTxMeta(path, platform)
+
+  }
+
 
   ## Get probes that are Negative control or 'blank' barcodes ##
   negProbes <- tx_df$target[grep('Neg*|SystemControl*|Blank*|BLANK*', tx_df$target)]
@@ -268,7 +510,7 @@ getGlobalFDR <- function(seu_obj, features=NULL) {
   # create table with expression per each gene in panel (adding N of Txs for each gene in object allGenes) - p.s This will take the expression of Txs outside of assigned cells
   expTableAll  <- tx_df[, .(Count = .N), by = target]
   expTable <- expTableAll[expTableAll$target %in% allGenes, ]
-  expNeg <- sum(expTableAll[!expTableAll$target %in% allGenes, ]$Count) ## sum of all Negative control or blank or unassigned barcodes
+  expNeg <- sum(expTableAll[!expTableAll$target %in% allGenes, ]$Count) ## sum of all Negative control or blank or unassigned barcodes (i.e non specific)
 
   numGenes <- length(expTable$target)
   numNeg <- length(expTableAll[!expTableAll$target %in% allGenes, ]$target)
@@ -278,17 +520,21 @@ getGlobalFDR <- function(seu_obj, features=NULL) {
     fdr = (expNeg / (expTable[expTable$target %in% i, ]$Count + expNeg) ) * (numGenes / numNeg) * 1/100
     expTable[target == i, FDR := fdr]
   }
+  if(!is.null(seu_obj)) {
+    res <- data.frame(
+      platform = unique(seu_obj@meta.data$platform),
+      value= mean(expTable$FDR)
+    )
+    return(res)
+  } else {
 
-  res <- data.frame(
-    #sample_id = unique(seu_obj$sample_id),
-    platform = unique(seu_obj$platform),
-    value= mean(expTable$FDR)
-  )
-  return(res)
+  if(is.null(features)) {
+    return(mean(expTable$FDR))
+  } else {
+    return(mean(expTable$FDR[expTable$target %in% features]))
+  }
 
-}
-
-
+}}
 
 #' @title getTxPerCell.
 #' @description Calculates the average number of transcripts per cell for the given features.
@@ -307,22 +553,58 @@ getGlobalFDR <- function(seu_obj, features=NULL) {
 #'         be useful for comparative analysis across samples or experimental conditions.
 #' @export
 #' @import Seurat
-getTxPerCell <- function(seu_obj, #features can be explicitly defined. Defaults to all targets
-                         features=NULL){
-  if(is.null(features)){
-    features <- rownames(seu_obj)
-  } else{
-    features <- features
+getTxPerCell <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_exprMatrix',
+                         platform){
+
+  if(is.null(seu_obj)) {
+    if(platform == 'Xenium') {
+      exp <- Matrix::readMM(file.path(expMat, 'matrix.mtx.gz'))
+      cols <- data.table::fread(file.path(expMat, 'barcodes.tsv.gz'), header = F)
+      rows <- data.table::fread(file.path(expMat, 'features.tsv.gz'), header = F)
+      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+      colnames(exp) <- cols$V1 ## this is the barcodes of cells
+    }
+
+    if(platform == 'CosMx') {
+      exp <- data.table::fread(file.path(expMat))
+      exp <- exp[, -c(1:2)]
+      exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
+
+    }
+
+    if(platform == 'Merscope') {
+
+    }
+
+    if(is.null(features)) {
+      features <- rownames(exp)
+      # remove non specific probes
+      features <- features[-grep('Unassigned*|NegControl*|BLANK*|SystemControl*', features)]
+    }
+
+    # Calculate average N of Txs per cell
+    mean_tx <- mean(colSums(exp[features, ]))
+
+    return(mean_tx)
+
   }
 
-  mean_tx <- mean(colSums(seu_obj[["RNA"]]$counts[features,]))
+  if(!is.null(seu_obj)) {
+    if(is.null(features)){
+      features <- rownames(seu_obj)
+    } else{
+      features <- features
+    }
 
-  res <- data.frame(
-    sample_id = unique(seu_obj$sample_id),
-    platform = unique(seu_obj$platform),
-    value=mean_tx
-  )
-  return(res)
+    mean_tx <- mean(colSums(seu_obj[["RNA"]]$counts[features,]))
+    res <- data.frame(
+      sample_id = unique(seu_obj$sample_id),
+      platform = unique(seu_obj$platform),
+      value=mean_tx
+    )
+    return(res)
+  }
+
 }
 
 #' This function calculates the mean number of transcripts per unit area for specified features (genes) in a Seurat object.
@@ -337,32 +619,161 @@ getTxPerCell <- function(seu_obj, #features can be explicitly defined. Defaults 
 #'        `seu_obj$cell_area` contains the area information for each cell.
 #' @param features An optional vector of feature names (e.g., gene symbols) for which to calculate transcripts per unit area.
 #'        Defaults to NULL, which means the calculation uses all available features in the RNA assay of the Seurat object.
+#' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+#'        and 'Merscope'. Note: 'Merscope' is currently not supported.
+#' @param tx_file Path to transcription file.
+#' @param cellSegMeta Path to CellsegMeta file.
 #' @return Returns a data frame with three columns: `sample_id`, `platform`, and `value`. The `value` column contains
 #'         the computed mean number of transcripts per unit area for the selected features across all cells in the dataset.
 #'         This data frame provides a concise summary of transcriptional activity normalized by cell size, which can be
 #'         critical for downstream analyses, especially in studies where cell morphology and size are variable.
 #' @import Seurat
 #' @export
-getTxPerArea <- function(seu_obj,
-                         features=NULL){
-  if(is.null(features)){
-    features <- rownames(seu_obj)
-  } else{
-    features <- features
+getTxPerArea <- function(seu_obj = NULL, features=NULL,
+                         platform, cellSegMeta = 'path_to_cellMeta', tx_file = NULL){
+
+  if(is.null(seu_obj)) {
+    if(platform == 'Xenium') {
+      cell_meta <- data.table::fread(file.path(cellSegMeta))
+
+      mean_tx_norm <- mean(cell_meta$total_counts / cell_meta$cell_area)
+
+      # If features are specified - have to calculate differently
+      if(!is.null(features)) {
+        ## Have to read the transcripts file
+        tx_df <- data.table::fread(tx_file)
+        # subset the tx file with only existing assigned cells and features
+        tx_df <- tx_df[tx_df$cell_id %in% cell_meta$cell_id,]
+        tx_df <- tx_df[tx_df$feature_name %in% features,]
+        # count number of features per cell - have to merge cell_meta and tx_df - to add the area information
+        tx_df <- merge(tx_df, cell_meta, by = 'cell_id')
+        tx_df <- tx_df %>% group_by(cell_id,cell_area) %>% tally()
+
+        mean_tx_norm <- mean(tx_df$n / tx_df$cell_area)
+      }
+
+    }
+
+    if(platform == 'CosMx') {
+      cell_meta <- data.table::fread(file.path(cellSegMeta))
+      mean_tx_norm <- mean(cell_meta$nCount_RNA / cell_meta$Area.um2)
+
+      if(!is.null(features)) {
+        ## Have to read the transcripts file
+        tx_df <- data.table::fread(tx_file)
+        # subset the tx file with only existing assigned cells and features
+        tx_df <- tx_df[cell_ID != 0 & target %in% features]
+        # count number of features per cell - have to merge cell_meta and tx_df - to add the area information
+        tx_df <- merge(tx_df, cell_meta, by = 'cell')
+        tx_df <- tx_df %>% group_by(cell,Area.um2) %>% tally()
+
+        mean_tx_norm <- mean(tx_df$n / tx_df$Area.um2)
+      }
+
+    }
+
+    if(platform == 'Merscope') {
+
+    }
+
+    return(mean_tx_norm)
+
   }
 
-  tx_count <- colSums(seu_obj[["RNA"]]$counts[features,])
-  mean_tx_norm <- mean(tx_count / seu_obj$cell_area)
+  if(!is.null(seu_obj)) {
+    if(is.null(features)){
+      features <- rownames(seu_obj)
+    } else{
+      features <- features
+    }
 
-  res <- data.frame(
-    sample_id = unique(seu_obj$sample_id),
-    platform = unique(seu_obj$platform),
-    value=mean_tx_norm
-  )
-  return(res)
+    tx_count <- colSums(seu_obj[["RNA"]]$counts[features,])
+    mean_tx_norm <- mean(tx_count / seu_obj$cell_area)
+    res <- data.frame(
+      sample_id = unique(seu_obj$sample_id),
+      platform = unique(seu_obj$platform),
+      value=mean_tx_norm
+    )
+    return(res)
+  }
+
+
 }
 
-### Transcripts per nucleus
+#' @title getTxPerCell.
+#' @description Calculates the average number of transcripts per cell for the given features.
+#' @details
+#' This function calculates the mean number of transcripts per cell for a specified set of features (genes)
+#' in a Seurat object. If no features are specified, the function defaults to using all targets available
+#' within the RNA assay of the provided Seurat object. It's a useful metric for assessing the overall
+#' transcriptional activity within the sampled cells.
+#' @param seu_obj A Seurat object with RNA assays. The object must have 'sample_id' and 'platform' metadata attributes for identification
+#'        and reporting purposes.
+#' @param features An optional vector of feature names (e.g., gene symbols) to include in the calculation.
+#'        Defaults to NULL, in which case the calculation uses all available features in the RNA assay
+#'        of the Seurat object.
+#' @param expMat Path to exprMatrix file.
+#' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+#'        and 'Merscope'. Note: 'Merscope' is currently not supported.
+#' @return A data frame with columns 'sample_id', 'platform', and 'value', where 'value' represents the
+#'         mean number of transcripts per cell calculated across the specified features. This output can
+#'         be useful for comparative analysis across samples or experimental conditions.
+#' @export
+#' @import Seurat
+getTxPerCell <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_exprMatrix',
+                         platform){
+
+  if(is.null(seu_obj)) {
+    if(platform == 'Xenium') {
+      exp <- Matrix::readMM(file.path(expMat, 'matrix.mtx.gz'))
+      cols <- data.table::fread(file.path(expMat, 'barcodes.tsv.gz'), header = F)
+      rows <- data.table::fread(file.path(expMat, 'features.tsv.gz'), header = F)
+      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+      colnames(exp) <- cols$V1 ## this is the barcodes of cells
+    }
+
+    if(platform == 'CosMx') {
+      exp <- data.table::fread(file.path(expMat))
+      exp <- exp[, -c(1:2)]
+      exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
+
+    }
+
+    if(platform == 'Merscope') {
+
+    }
+
+    if(is.null(features)) {
+      features <- rownames(exp)
+      # remove non specific probes
+      features <- features[-grep('Unassigned*|NegControl*|BLANK*|SystemControl*', features)]
+    }
+
+    # Calculate average N of Txs per cell
+    mean_tx <- mean(colSums(exp[features, ]))
+
+    return(mean_tx)
+
+  }
+
+  if(!is.null(seu_obj)) {
+    if(is.null(features)){
+      features <- rownames(seu_obj)
+    } else{
+      features <- features
+    }
+
+    mean_tx <- mean(colSums(seu_obj[["RNA"]]$counts[features,]))
+    res <- data.frame(
+      sample_id = unique(seu_obj$sample_id),
+      platform = unique(seu_obj$platform),
+      value=mean_tx
+    )
+    return(res)
+  }
+
+}
+
 #' @title getTxPerNuc.
 #' @description
 #' It calculates ranscripts per nucleus.
@@ -402,8 +813,8 @@ getTxPerNuc <- function(seu_obj,
 
   if(platform == "Xenium"){
     tx_df <- dplyr::filter(tx_df, cell_id %in% colnames(seu_obj) &
-                      overlaps_nucleus == 1 &
-                      features %in% features) %>%
+                             overlaps_nucleus == 1 &
+                             features %in% features) %>%
       group_by(cell_id) %>%
       summarize(nuc_counts = n())
 
@@ -412,8 +823,8 @@ getTxPerNuc <- function(seu_obj,
     tx_df$cell_id <- paste(tx_df$cell_ID, tx_df$fov, sep="_")
     tx_df <- tx_df %>%
       dplyr::filter(cell_id %in% colnames(seu_obj) &
-               CellComp == "Nuclear" &
-               target %in% features) %>%
+                      CellComp == "Nuclear" &
+                      target %in% features) %>%
       group_by(cell_id) %>%
       summarize(nuc_counts = n())
 
@@ -433,8 +844,6 @@ getTxPerNuc <- function(seu_obj,
   return(res)
 }
 
-
-### Per Probe Mean Expression
 #' @title getMeanExpression.
 #' @description
 #' It calculated mean expression per probe.
@@ -447,35 +856,78 @@ getTxPerNuc <- function(seu_obj,
 #' This object must have an RNA assay for target genes and a ControlProbe assay for control probes.
 #' @param features An optional vector of gene names for which to calculate mean expression.
 #' If NULL, mean expression is calculated for all genes in the RNA assay.
+#' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+#'        and 'Merscope'. Note: 'Merscope' is currently not supported.
+#' @param expMat Path to exprMatrix file.
 #' @return A data frame with columns `target` (gene or control probe name), `value` (mean expression level),
 #' `type` (indicating whether the row represents a Gene or Control), `platform`, and `sample_id`.
 #' @export
 #' @import Seurat
-getMeanExpression <- function(seu_obj,
-                              features=NULL){
-  if(is.null(features)){
-    features <- rownames(seu_obj)
-  } else{
-    features <- features
+getMeanExpression <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_expMatrix',
+                              platform=NULL){
+
+  if(is.null(seu_obj)) {
+    if(platform == 'Xenium') {
+      exp <- Matrix::readMM(file.path(expMat, 'matrix.mtx.gz'))
+      cols <- data.table::fread(file.path(expMat, 'barcodes.tsv.gz'), header = F)
+      rows <- data.table::fread(file.path(expMat, 'features.tsv.gz'), header = F)
+      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+      colnames(exp) <- cols$V1 ## this is the barcodes of cells
+      # remove neg control
+      exp <- exp[-grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', rownames(exp)),]
+    }
+
+    if(platform == 'CosMx') {
+      exp <- data.table::fread(file.path(expMat))
+      ## remove first 2 columns - usually FOV and Cell_ID information
+      exp <- exp[, -c(1:2)]
+      exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
+
+    }
+
+    if(platform == 'Merscope') {
+
+    }
+
+    avg_exp_df <- as.data.frame(rowMeans(exp))
+    colnames(avg_exp_df) <- 'MeanExpression'
+
+    if(is.null(features)) {
+      return(avg_exp_df)
+    } else {
+      return(subset(avg_exp_df, rownames(avg_exp_df) %in% features))
+    }
+
   }
 
-  target_df <- data.frame(
-    target = features,
-    value = rowMeans(seu_obj[["RNA"]]$counts[features,]),
-    type = "Gene"
-  )
 
-  control_df <- data.frame(
-    target = rownames(seu_obj[["ControlProbe"]]$counts),
-    value = rowMeans(seu_obj[["ControlProbe"]]$counts),
-    type = "Control"
-  )
 
-  res <- rbind(target_df, control_df)
-  res$platform <- unique(seu_obj$platform)
-  res$sample_id <- unique(seu_obj$sample_id)
+  if(!is.null(seu_obj)) {
+    if(is.null(features)){
+      features <- rownames(seu_obj)
+    } else{
+      features <- features
+    }
 
-  return(res)
+    target_df <- data.frame(
+      target = features,
+      value = rowMeans(seu_obj[["RNA"]]$counts[features,]),
+      type = "Gene"
+    )
+
+    control_df <- data.frame(
+      target = rownames(seu_obj[["ControlProbe"]]$counts),
+      value = rowMeans(seu_obj[["ControlProbe"]]$counts),
+      type = "Control"
+    )
+
+    res <- rbind(target_df, control_df)
+    res$platform <- unique(seu_obj$platform)
+    res$sample_id <- unique(seu_obj$sample_id)
+
+    return(res)
+  }
+
 }
 
 ### log-ratio of mean gene counts to mean neg probe counts
@@ -518,7 +970,6 @@ getMeanSignalRatio <- function(seu_obj,
   return(res)
 }
 
-### Fraction of transcripts in cells
 #' @title getCellTxFraction.
 #' @description
 #' It calculates fraction of transcripts in cells.
@@ -528,53 +979,100 @@ getMeanSignalRatio <- function(seu_obj,
 #' This metric is an important indicator of the quality of spatial transcriptomics data, reflecting the efficiency of transcript capture and cell assignment.
 #' @param seu_obj A Seurat object containing spatial transcriptomics data, expected to include metadata fields for `path` and `platform` to facilitate reading transcript metadata with `readTxMeta`.
 #' @param features An optional vector of gene identifiers for which to calculate the transcript fraction. If NULL, the calculation is performed using all available features in the dataset.
+#' @param tx_file Path to transcription file.
+#' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+#'        and 'Merscope'. Note: 'Merscope' is currently not supported.
+#' @param path path
 #' @return A data frame containing the calculated fraction of transcripts in cells, along with `sample_id` and `platform` for context. This output provides insight into the efficiency of transcript capture and assignment within the given dataset.
 #' @return A data frame with probe type (Gene or Control), the mean expression values, and the associated sample and platform identifiers.
 #' @export
 #' @import Seurat
-getCellTxFraction <- function(seu_obj,
-                              features=NULL){
-  if(is.null(features)){
-    features <- rownames(seu_obj)
-  } else{
-    features <- features
+getCellTxFraction <- function(seu_obj=NULL, features=NULL, tx_file = 'path_to_tx',
+                              platform = NULL,path){
+
+  if(is.null(seu_obj)) {
+
+    tx_df <- data.table::fread(tx_file)
+    total_tx_count <- nrow(tx_df)
+
+    if(platform == 'Xenium') {
+      if(is.null(features)) {
+        unassigned_tx_count <- sum(tx_df$cell_id == 'UNASSIGNED')
+      } else {
+        tx_df <- tx_df[tx_df$feature_name %in% features,]
+        total_tx_count <- nrow(tx_df)
+        unassigned_tx_count <- sum(tx_df$cell_id == 'UNASSIGNED')
+
+      }
+
+    }
+
+    if(platform == 'CosMx') {
+      if(is.null(features)) {
+        unassigned_tx_count <- sum(tx_df$CellComp == '')
+
+      } else {
+        tx_df <- tx_df[tx_df$target %in% features,]
+        total_tx_count <- nrow(tx_df)
+        unassigned_tx_count <- sum(tx_df$CellComp == '')
+
+      }
+
+    }
+
+    return( (total_tx_count - unassigned_tx_count) / total_tx_count )
+
   }
 
-  path <- unique(seu_obj$path)
-  platform <- unique(seu_obj$platform)
 
-  tx_df <- readTxMeta(path, platform)
+  if(!is.null(seu_obj)) {
+    if(is.null(features)){
+      features <- rownames(seu_obj)
+    } else{
+      features <- features
+    }
 
-  if(platform == "Xenium"){
-    #tx_df <- filter(tx_df, features %in% feature_name)
-    tx_df <- tx_df[tx_df$feature_name %in% features, ]
-    total_tx_count <- nrow(tx_df)
-    unassigned_tx_count <- sum(tx_df$cell_id == "UNASSIGNED")
+    path <- unique(seu_obj$path)
+    platform <- unique(seu_obj$platform)
 
-    cell_tx_fraction <- (total_tx_count - unassigned_tx_count) / total_tx_count
+    tx_df <- readTxMeta(path, platform)
 
-  } else if(platform == "CosMx"){
-    tx_df <- dplyr::filter(tx_df, target %in% features)
-    total_tx_count <- nrow(tx_df)
-    unassigned_tx_count <- sum(tx_df$CellComp == "None")
+    if(platform == "Xenium"){
+      #tx_df <- filter(tx_df, features %in% feature_name)
+      tx_df <- tx_df[tx_df$target%in% features, ]
+      total_tx_count <- nrow(tx_df)
+      unassigned_tx_count <- sum(tx_df$cell_id == "UNASSIGNED")
 
-    cell_tx_fraction <- (total_tx_count - unassigned_tx_count) / total_tx_count
+      cell_tx_fraction <- (total_tx_count - unassigned_tx_count) / total_tx_count
 
-  } else if(platform == "Merscope"){
-    print("Working on support")
+    } else if(platform == "CosMx"){
+      tx_df <- filter(tx_df, target %in% features)
+      total_tx_count <- nrow(tx_df)
+      unassigned_tx_count <- sum(tx_df$CellComp == "None")
 
-  } else{
-    print("Platform not supported")
+      cell_tx_fraction <- (total_tx_count - unassigned_tx_count) / total_tx_count
+
+    } else if(platform == "Merscope"){
+      print("Working on support")
+
+    } else{
+      print("Platform not supported")
+    }
+
+    res <- data.frame(
+      sample_id = unique(seu_obj$sample_id),
+      platform = unique(seu_obj$platform),
+      value=cell_tx_fraction
+    )
+
+    return(res)
   }
 
-  res <- data.frame(
-    sample_id = unique(seu_obj$sample_id),
-    platform = unique(seu_obj$platform),
-    value=cell_tx_fraction
-  )
 
-  return(res)
+
 }
+
+
 
 ##### Dynamic Range
 # Log-ratio of highest mean exp vs. mean noise
@@ -591,31 +1089,65 @@ getCellTxFraction <- function(seu_obj,
 #' and control probes ('ControlProbe').
 #' @param features An optional vector of gene identifiers for which to perform the calculation. If NULL, the calculation
 #' includes all genes in the RNA assay.
+#' @param expMat Path to exprMatrix file.
+#' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+#'        and 'Merscope'. Note: 'Merscope' is currently not supported.
 #' @return A data frame with `sample_id`, `platform`, and the calculated `value` of the log-ratio.
 #' @export
 #' @import Seurat
-getMaxRatio <- function(seu_obj,
-                        features=NULL){
-  if(is.null(features)){
-    features <- rownames(seu_obj)
-  } else{
-    features <- features
+getMaxRatio <- function(seu_obj = NULL, features=NULL, expMat ='path_to_expMat', platform = NULL){
+
+  if(is.null(seu_obj)) {
+    if(platform == 'Xenium') {
+      exp <- Matrix::readMM(file.path(expMat, 'matrix.mtx.gz'))
+      cols <- data.table::fread(file.path(expMat, 'barcodes.tsv.gz'), header = F)
+      rows <- data.table::fread(file.path(expMat, 'features.tsv.gz'), header = F)
+      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+      colnames(exp) <- cols$V1 ## this is the barcodes of cells
+    }
+
+    if(platform == 'CosMx') {
+      exp <- data.table::fread(file.path(expMat))
+      ## remove first 2 columns - usually FOV and Cell_ID information
+      exp <- exp[, -c(1:2)]
+      exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
+    }
+
+    tx_means <- rowMeans(exp[-grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', rownames(exp)),])
+    neg_probe_means <- rowMeans(exp[grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', rownames(exp)), ])
+
+    if(is.null(features)) {
+      return( log10(max(tx_means)) - log10(mean(neg_probe_means)) )
+
+    } else {
+      return( log10(max(tx_means[features])) - log10(mean(neg_probe_means)) )
+    }
+
   }
 
-  tx_means <- rowMeans(seu_obj[["RNA"]]$counts[features,])
-  neg_probe_means <- rowMeans(seu_obj[["ControlProbe"]]$counts)
 
-  ratio <- log10(max(tx_means)) - log10(mean(neg_probe_means))
+  if(!is.null(seu_obj)) {
 
-  res <- data.frame(
-    sample_id = unique(seu_obj$sample_id),
-    platform = unique(seu_obj$platform),
-    value=ratio
-  )
+    if(is.null(features)){
+      features <- rownames(seu_obj)
+    } else{
+      features <- features
+    }
 
-  return(res)
+    tx_means <- rowMeans(seu_obj[["RNA"]]$counts[features,])
+    neg_probe_means <- rowMeans(seu_obj[["ControlProbe"]]$counts)
+
+    ratio <- log10(max(tx_means)) - log10(mean(neg_probe_means))
+
+    res <- data.frame(
+      sample_id = unique(seu_obj$sample_id),
+      platform = unique(seu_obj$platform),
+      value=ratio
+    )
+
+    return(res)
+  }
 }
-
 # Distribution of maximal values
 #' @title getMaxDetection.
 #' @description
@@ -628,8 +1160,11 @@ getMaxRatio <- function(seu_obj,
 #' efficiency across different genes.
 #'
 #' @param seu_obj A Seurat object.
+#' @param expMat Path to exprMatrix file.
 #' @param features An optional vector of gene identifiers for which to analyze the distribution of maximal
 #' expression values. If NULL, the calculation encompasses all genes in the dataset.
+#' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+#'        and 'Merscope'. Note: 'Merscope' is currently not supported.
 #' @return A data frame summarizing the maximal expression values across the specified features or the
 #' entire dataset, which can be used to analyze the upper limits of detection and expression within the
 #' sample.
@@ -637,24 +1172,56 @@ getMaxRatio <- function(seu_obj,
 #' @export
 #' @import Seurat
 
-getMaxDetection <- function(seu_obj,
-                            features=NULL){
-  if(is.null(features)){
-    features <- rownames(seu_obj)
-  } else{
-    features <- features
+getMaxDetection <- function(seu_obj = NULL, features=NULL, expMat ='path_to_expMat', platform = NULL){
+
+  if(is.null(seu_obj)) {
+    if(platform == 'Xenium') {
+      exp <- Matrix::readMM(file.path(expMat, 'matrix.mtx.gz'))
+      cols <- data.table::fread(file.path(expMat, 'barcodes.tsv.gz'), header = F)
+      rows <- data.table::fread(file.path(expMat, 'features.tsv.gz'), header = F)
+      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+      colnames(exp) <- cols$V1 ## this is the barcodes of cells
+    }
+
+    if(platform == 'CosMx') {
+      exp <- data.table::fread(file.path(expMat))
+      ## remove first 2 columns - usually FOV and Cell_ID information
+      exp <- exp[, -c(1:2)]
+      exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
+    }
+
+    max_vals <- data.frame(matrixStats::rowMaxs(as.matrix(exp)))
+    colnames(max_vals) <- 'MaxValue'
+
+    if(is.null(features)) {
+      return(max_vals)
+    } else {
+      return(subset(max_vals, rownames(max_vals) %in% features))
+    }
+
   }
 
-  max_vals <- matrixStats::rowMaxs(as.matrix(seu_obj[["RNA"]]$counts[features,]))
 
-  res <- data.frame(
-    sample_id = unique(seu_obj$sample_id),
-    platform = unique(seu_obj$platform),
-    value=max_vals,
-    gene = features
-  )
 
-  return(res)
+  if(!is.null(seu_obj)) {
+    if(is.null(features)){
+      features <- rownames(seu_obj)
+    } else{
+      features <- features
+    }
+
+    max_vals <- matrixStats::rowMaxs(as.matrix(seu_obj[["RNA"]]$counts[features,]))
+
+    res <- data.frame(
+      sample_id = unique(seu_obj$sample_id),
+      platform = unique(seu_obj$platform),
+      value=max_vals,
+      gene = features
+    )
+
+    return(res)
+  }
+
 }
 
 ##### Mutually Exclusive Co-expression Rate (MECR) Implementation
@@ -667,14 +1234,15 @@ getMaxDetection <- function(seu_obj,
 #' to markers found in the dataset and can be adjusted to focus on a subset by specifying it. The result is a
 #' single MECR value that quantifies the overall mutually exclusive co-expression pattern, rounded to three decimal places.
 #' @param  seu_obj A seurat object.
+#' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+#'        and 'Merscope'. Note: 'Merscope' is currently not supported.
+#' @param expMat Path to exprMatrix file.
 #' @return A data frame containing the `sample_id`, `platform`, and the computed
 #' MECR value. The MECR value is rounded to three decimal places and represents
 #' the average mutually exclusive co-expression rate across the selected markers.
 #' @export
 #' @import Seurat
-
-
-getMECR <- function(seu_obj) {
+getMECR <- function(seu_obj=NULL, expMat = 'path_to_expMat', platform = NULL) {
   #This function comes from Hartman & Satija, bioRxiv, 2024
   #We are using a custom marker table. The original publication bases it on
   #scRNA-seq from matched tissue.
@@ -696,11 +1264,38 @@ getMECR <- function(seu_obj) {
   )
   rownames(marker_df) <- marker_df$gene
 
+  if(is.null(seu_obj)) {
+    if(platform == 'Xenium') {
+      exp <- Matrix::readMM(file.path(expMat, 'matrix.mtx.gz'))
+      cols <- data.table::fread(file.path(expMat, 'barcodes.tsv.gz'), header = F)
+      rows <- data.table::fread(file.path(expMat, 'features.tsv.gz'), header = F)
+      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+      colnames(exp) <- cols$V1 ## this is the barcodes of cells
+    }
+
+    if(platform == 'CosMx') {
+      exp <- data.table::fread(file.path(expMat))
+      ## remove first 2 columns - usually FOV and Cell_ID information
+      exp <- exp[, -c(1:2)]
+      exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
+    }
+
+    genes <- intersect(rownames(exp), rownames(marker_df))
+    mtx <- as.matrix(exp[genes,])
+
+  }
+
+  if(!is.null(seu_obj)) {
+
+    genes <- intersect(rownames(seu_obj), rownames(marker_df))
+    mtx <- as.matrix(seu_obj[['RNA']]$counts[genes, ])
+
+
+  }
+
   coexp.rates <- c()
-  genes <- intersect(rownames(seu_obj), rownames(marker_df))
-  print(paste0("Marker count: ", length(genes)))
+  #print(paste0("Marker count: ", length(genes)))
   if (length(genes) > 25) { genes <- sample(genes, 25) }
-  mtx <- as.matrix(seu_obj[['RNA']]$counts[genes, ])
   for (g1 in genes) {
     for (g2 in genes) {
       if ((g1 != g2) && (g1 > g2) && (marker_df[g1, "cell_type"] != marker_df[g2, "cell_type"])) {
@@ -712,6 +1307,7 @@ getMECR <- function(seu_obj) {
       }
     }
   }
+
 
   res <- data.frame(
     sample_id = unique(seu_obj$sample_id),
@@ -743,7 +1339,6 @@ getMECR <- function(seu_obj) {
 #' @importFrom scater logNormCounts
 #' @importFrom BiocParallel MulticoreParam
 
-
 getMorans <- function(seu_obj,
                       features=NULL){
   #Requires SingleCellExperiment, SpatialFeatureExperiment, Voyager, scater
@@ -756,18 +1351,18 @@ getMorans <- function(seu_obj,
 
   #First run for gene-targeting probes
   print("Getting Moran's I for gene-targeting probes")
-  sce <- SingleCellExperiment::SingleCellExperiment(list(counts=seu_obj[["RNA"]]$counts[features,]),
+  sce <- SingleCellExperiment(list(counts=seu_obj[["RNA"]]$counts[features,]),
                               colData = seu_obj@meta.data)
   colData(sce) <- cbind(colData(sce), Embeddings(seu_obj, 'tissue'))
-  spe <- SpatialExperiment::toSpatialExperiment(sce, spatialCoordsNames = c("Tissue_1",
+  spe <- toSpatialExperiment(sce, spatialCoordsNames = c("Tissue_1",
                                                          "Tissue_2"))
-  sfe <- SpatialFeatureExperiment::toSpatialFeatureExperiment(spe)
+  sfe <- toSpatialFeatureExperiment(spe)
   sfe <- sfe[, colSums(counts(sfe)) > 0]
-  SpatialFeatureExperiment::rowData(sfe)$means <- rowMeans(counts(sfe))
-  SpatialFeatureExperiment::rowData(sfe)$vars <- rowVars(counts(sfe))
+  rowData(sfe)$means <- rowMeans(counts(sfe))
+  rowData(sfe)$vars <- rowVars(counts(sfe))
   sfe <- scater::logNormCounts(sfe)
 
-  SpatialFeatureExperiment::colGraph(sfe, "knn20") <- SpatialFeatureExperiment::findSpatialNeighbors(sfe, method = "knearneigh",
+  colGraph(sfe, "knn20") <- findSpatialNeighbors(sfe, method = "knearneigh",
                                                  dist_type = "idw", k = 20,
                                                  style = "W")
 
@@ -788,20 +1383,20 @@ getMorans <- function(seu_obj,
   sce <- SingleCellExperiment(list(counts=seu_obj[["ControlProbe"]]$counts),
                               colData = seu_obj@meta.data)
   colData(sce) <- cbind(colData(sce), Embeddings(seu_obj, 'tissue'))
-  spe <- SpatialExperiment::toSpatialExperiment(sce, spatialCoordsNames = c("Tissue_1",
+  spe <- toSpatialExperiment(sce, spatialCoordsNames = c("Tissue_1",
                                                          "Tissue_2"))
   sfe <- toSpatialFeatureExperiment(spe)
-  sfe <- sfe[, colSums(SingleCellExperiment::counts(sfe)) > 0]
+  sfe <- sfe[, colSums(counts(sfe)) > 0]
   rowData(sfe)$means <- rowMeans(counts(sfe))
   rowData(sfe)$vars <- rowVars(counts(sfe))
   sfe <- scater::logNormCounts(sfe)
 
   #Nearest neighbor
-  SpatialFeatureExperiment::colGraph(sfe, "knn20") <- SpatialFeatureExperiment::findSpatialNeighbors(sfe, method = "knearneigh",
+  colGraph(sfe, "knn20") <- findSpatialNeighbors(sfe, method = "knearneigh",
                                                  dist_type = "idw", k = 20,
                                                  style = "W")
   #Moran's I
-  sfe <- Voyager::runMoransI(sfe, colGraphName = "knn20", BPPARAM = BiocParallel::MulticoreParam(8))
+  sfe <- Voyager::runMoransI(sfe, colGraphName = "knn20", BPPARAM = MulticoreParam(8))
 
   spatial_cor <- as.data.frame(rowData(sfe))
 
@@ -831,8 +1426,6 @@ getMorans <- function(seu_obj,
 #' @export
 #' @import Seurat
 #' @importFrom bluster approxSilhouette
-
-
 getSilhouetteWidth <- function(seu_obj){
   print("Clustering data")
   seu_obj <- seu_obj %>%
@@ -871,19 +1464,51 @@ getSilhouetteWidth <- function(seu_obj){
 #' @details
 #' For example, .99 sparsity means 99% of the values are zero. Similarly, a sparsity of 0 means the matrix is fully dense.
 #' @param seu_obj A Seurat object.
+#' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+#'        and 'Merscope'. Note: 'Merscope' is currently not supported.
+#' @param expMat Path to exprMatrix file.
+#' @param features An optional vector of feature names (e.g., gene symbols) to include in the calculation.
+#'        Defaults to NULL, in which case the calculation uses all available features in the RNA assay
+#'        of the Seurat object.
 #' @return A data frame.
 #' @export
 #' @importFrom BioQC entropy
 #' @import Seurat
 #' @importFrom coop sparsity
-getSparsity <- function(seu_obj) {
-  value = coop::sparsity(as.matrix(seu_obj@assays$RNA$counts))
-  res <- data.frame(
-    sample_id = unique(seu_obj$sample_id),
-    platform = unique(seu_obj$platform),
-    value=round(value, digits=3)
-  )
-  return(res)
+getSparsity <- function(seu_obj=NULL, features = NULL, expMat = 'path_to_expMat', platform = NULL) {
+
+  if(is.null(seu_obj)) {
+    if(platform == 'Xenium') {
+      exp <- Matrix::readMM(file.path(expMat, 'matrix.mtx.gz'))
+      cols <- data.table::fread(file.path(expMat, 'barcodes.tsv.gz'), header = F)
+      rows <- data.table::fread(file.path(expMat, 'features.tsv.gz'), header = F)
+      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+      colnames(exp) <- cols$V1 ## this is the barcodes of cells
+    }
+
+    if(platform == 'CosMx') {
+      exp <- data.table::fread(file.path(expMat))
+      exp <- exp[, -c(1:2)]
+      exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
+    }
+
+    if(is.null(features)) {
+      return(coop::sparsity(as.matrix(exp)))
+    } else {
+      return(coop::sparsity(as.matrix(exp[rownames(exp) %in% features, ])))
+    }
+  }
+
+  if(!is.null(seu_obj)) {
+    value = coop::sparsity(as.matrix(seu_obj@assays$RNA$counts))
+    res <- data.frame(
+      sample_id = unique(seu_obj$sample_id),
+      platform = unique(seu_obj$platform),
+      value=round(value, digits=3)
+    )
+    return(res)
+  }
+
 }
 
 #' @title getEntropy.
@@ -893,32 +1518,316 @@ getSparsity <- function(seu_obj) {
 #' A higher entropy value suggests a more uniform distribution across genes, while a lower value indicates concentration in a smaller number of genes.
 #' This measure can provide insights into the complexity of the cellular composition and the heterogeneity within the sample.
 #' @param seu_obj A Seurat object containing RNA count data.
+#' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+#'        and 'Merscope'. Note: 'Merscope' is currently not supported.
+#' @param expMat Path to exprMatrix file.
+#' @param features An optional vector of feature names (e.g., gene symbols) to include in the calculation.
+#'        Defaults to NULL, in which case the calculation uses all available features in the RNA assay
+#'        of the Seurat object.
 #' @return A data frame with the `sample_id`, `platform`, and the entropy value of the RNA count matrix, rounded to three decimal places.
 #' @export
 #' @importFrom BioQC entropy
-getEntropy <- function(seu_obj) {
-  value = BioQC::entropy(as.matrix(seu_obj@assays$RNA$counts))
+getEntropy <- function(seu_obj=NULL, features = NULL, expMat = 'path_to_expMat', platform = NULL) {
+
+  if(is.null(seu_obj)) {
+    if(platform == 'Xenium') {
+      exp <- Matrix::readMM(file.path(expMat, 'matrix.mtx.gz'))
+      cols <- data.table::fread(file.path(expMat, 'barcodes.tsv.gz'), header = F)
+      rows <- data.table::fread(file.path(expMat, 'features.tsv.gz'), header = F)
+      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+      colnames(exp) <- cols$V1 ## this is the barcodes of cells
+    }
+
+    if(platform == 'CosMx') {
+      exp <- data.table::fread(file.path(expMat))
+      exp <- exp[, -c(1:2)]
+      exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
+    }
+
+    if(is.null(features)) {
+      return(BioQC::entropy(as.matrix(exp)))
+    } else {
+      return(BioQC::entropy(as.matrix(exp[rownames(exp) %in% features, ])))
+    }
+  }
+
+
+  if(!is.null(seu_obj)) {
+    value = BioQC::entropy(as.matrix(seu_obj@assays$RNA$counts))
+    res <- data.frame(
+      sample_id = unique(seu_obj$sample_id),
+      platform = unique(seu_obj$platform),
+      value=round(value, digits=3)
+    )
+    return(res)
+  }
+
+}
+
+
+### ref
+#' @title getRCTD
+#' @description
+#' Performs cell type deconvolution on spatial transcriptomics data. This function requires a Seurat object with spatial transcriptomics data (`seu_obj`)
+#' and a reference Seurat object (`ref`). It filters out cells with fewer than 10 transcripts to improve accuracy and uses RCTD for cell type deconvolution.
+#' @details
+#' The function first prepares the reference data by extracting counts, cell type annotations, and UMI counts. The reference dataset is then used to construct
+#' a `Reference` object. For the query (spatial) data, cells with fewer than 10 transcript counts are filtered out, and tissue coordinates are prepared.
+#' The function then runs RCTD, which uses spatial and reference data to deconvolve cell types present in the spatial dataset. The output is a modified RCTD object
+#' with cell type weights normalized across each spatial location. Users should be aware that low transcript counts may affect the accuracy of deconvolution;
+#' hence, filtering is a crucial step before analysis.
+#' @param seu_obj A Seurat object containing spatial transcriptomics data.
+#' @param ref A Seurat object containing single-cell RNA-seq data used as a reference for deconvolution.
+#' @return A RCTD object containing the results of the deconvolution, including cell type weights for each spatial location.
+#'
+#' @importFrom dplyr filter
+#' @importFrom tibble column_to_rownames
+#' @importFrom Matrix colSums
+#' @importFrom Seurat GetTissueCoordinates
+#' @importFrom spacexr SpatialRNA
+#' @importFrom spacexr Reference
+#' @importFrom spacexr create.RCTD
+#' @importFrom spacexr run.RCTD
+#' @export
+getRCTD <- function(seu_obj, ref){
+  # Prep reference for RCTD
+  counts <- ref[["RNA"]]$counts
+  cluster <- ref$cell_type
+  cluster <- factor(cluster)
+  names(cluster) <- colnames(ref)
+  nUMI <- ref$nCount_RNA
+  names(nUMI) <- colnames(ref)
+  reference <- Reference(counts, cluster, nUMI)
+
+  # Prep obj
+  # NOTE: If tx counts are low, it will fail.
+  # I've found that subseting to >10 counts tends to work.
+  # Should decide if that's done here or in a separate function
+  print("Filtering any cells with <10 tx counts")
+  seu_obj <- subset(seu_obj, nCount_RNA > 10)
+  counts <- seu_obj[["RNA"]]$counts
+  coords <- GetTissueCoordinates(seu_obj)
+  coords <- filter(coords, cell %in% colnames(seu_obj)) %>%
+    column_to_rownames(var = "cell")
+  colnames(coords) <- c("x", "y")
+  coords[is.na(colnames(coords))] <- NULL
+  query <- SpatialRNA(coords, counts, colSums(counts))
+
+  # Run RCTD in full mode
+  print("Running RCTD")
+  RCTD <- create.RCTD(query, reference, max_cores = 6,
+                      UMI_min = 0, UMI_max = Inf, counts_MIN = 0,
+                      UMI_min_sigma = 50)
+  RCTD <- run.RCTD(RCTD, doublet_mode = "full")
+  RCTD@results$weights <- RCTD@results$weights / rowSums(RCTD@results$weights)
+  return(RCTD)
+  #seu_obj$max_weight <- rowMaxs(RCTD@results$weights)
+
+}
+
+#' @title getMaxRCTD
+#' @description
+#' This function is designed to run Robust Cell Type Deconvolution (RCTD) on spatial transcriptomics data using a single-cell RNA-seq reference.
+#' It filters cells based on transcript counts, prepares the data, runs RCTD, and then calculates the maximum cell type weight for each spatial location,
+#' indicating the most prevalent cell type. The results include sample identifiers, platforms, and the corresponding maximum weight values, rounded to three decimal places.
+#' @details
+#' Initially, the function prepares the reference data from a Seurat object by extracting RNA counts, cell types, and UMI counts to create a reference object for RCTD.
+#' Spatial data is also preprocessed by filtering cells with low transcript counts and preparing coordinates. RCTD is then executed to deconvolve cell types.
+#' Post RCTD, the function extracts the maximum weight for each cell type across spatial locations, which can be used to identify dominant cell types in specific areas.
+#' The approach ensures a focus on significant cell type contributions, enhancing the interpretation of spatial transcriptomics data.
+#' @param seu_obj A Seurat object containing spatial transcriptomics data.
+#' @param ref A Seurat object containing single-cell RNA-seq data used as a reference for deconvolution.
+#' @importFrom dplyr filter
+#' @importFrom tibble column_to_rownames
+#' @importFrom Matrix colSums
+#' @import Seurat
+#' @importFrom spacexr SpatialRNA Reference create.RCTD run.RCTD
+getMaxRCTD <- function(seu_obj, ref){
+  # Prep reference for RCTD
+  counts <- ref[["RNA"]]$counts
+  cluster <- ref$cell_type
+  cluster <- factor(cluster)
+  names(cluster) <- colnames(ref)
+  nUMI <- ref$nCount_RNA
+  names(nUMI) <- colnames(ref)
+  reference <- Reference(counts, cluster, nUMI)
+
+  # Prep obj
+  # NOTE: If tx counts are low, it will fail.
+  # I've found that subseting to >10 counts tends to work.
+  # Should decide if that's done here or in a separate function
+  print("Filtering any cells with <10 tx counts")
+  seu_obj <- subset(seu_obj, nCount_RNA > 10)
+  counts <- seu_obj[["RNA"]]$counts
+  coords <- GetTissueCoordinates(seu_obj)
+  coords <- filter(coords, cell %in% colnames(seu_obj)) %>%
+    column_to_rownames(var = "cell")
+  colnames(coords) <- c("x", "y")
+  coords[is.na(colnames(coords))] <- NULL
+  query <- SpatialRNA(coords, counts, colSums(counts))
+
+  # Run RCTD in full mode
+  print("Running RCTD")
+  RCTD <- create.RCTD(query, reference, max_cores = 6,
+                      UMI_min = 0, UMI_max = Inf, counts_MIN = 0,
+                      UMI_min_sigma = 50)
+  RCTD <- run.RCTD(RCTD, doublet_mode = "full")
+  RCTD@results$weights <- RCTD@results$weights / rowSums(RCTD@results$weights)
+
   res <- data.frame(
     sample_id = unique(seu_obj$sample_id),
     platform = unique(seu_obj$platform),
-    value=round(value, digits=3)
+    value=round(rowMaxs(RCTD@results$weights), digits=3)
+  )
+
+  return(res)
+}
+
+#' @title getCorrelationExp
+#' @description
+#' Identifies common genes between a spatial transcriptomics dataset (`seu_obj`) and a single-cell RNA-seq reference dataset (`ref`).
+#' It computes the mean expression levels of these genes in both datasets and includes the mean signal of control probes from `seu_obj`.
+#' This function is useful for preparing data for correlation analyses or visual comparison between datasets.
+#' @details
+#' The function begins by identifying genes present in both the spatial transcriptomics dataset and the single-cell reference.
+#' For these common genes, it calculates the average expression levels in both datasets. Additionally, it computes the average signal
+#' of control probes in the spatial dataset, which can serve as a background signal reference. The resulting data frame includes sample identifiers,
+#' platforms, gene names, mean expression values in the sample and reference, and the negative control probe signal, facilitating easy comparison and correlation analysis.
+#' @param seu_obj A Seurat object containing spatial transcriptomics data.
+#' @param ref A Seurat object containing single-cell RNA-seq data used as a reference.
+#' @return A data frame with columns for `sample_id`, `platform`, `gene`, `value_sample`, `value_ref`, and `neg_probe_signal`.
+#' @export
+getCorrelationExp <- function(seu_obj, ref){
+  common_genes <- intersect(rownames(seu_obj), rownames(ref))
+  res <- data.frame(
+    sample_id = unique(seu_obj$sample_id),
+    platform = unique(seu_obj$platform),
+    gene = common_genes,
+    value_sample = rowMeans(seu_obj[["RNA"]]$counts[common_genes,]),
+    value_ref = rowMeans(ref[["RNA"]]$counts[common_genes,]),
+    neg_probe_signal = mean(seu_obj[["ControlProbe"]]$counts)
   )
   return(res)
 }
 
+#' @title getCorrelation
+#' @description
+#' Identifies common genes between a spatial transcriptomics dataset (`seu_obj`) and a single-cell RNA-seq reference dataset (`ref`).
+#' It then computes the Spearman correlation coefficient based on the mean expression levels of these genes across the datasets.
+#' The result is a single correlation coefficient value that quantifies the similarity between the two datasets at the expression level of shared genes.
+#' @details
+#' This function is particularly useful for assessing the overall concordance between spatial transcriptomics data and a reference single-cell RNA-seq dataset.
+#' By focusing on common genes, it provides a metric of similarity that can help validate spatial data against established single-cell profiles or compare spatial datasets against different references.
+#' @param seu_obj A Seurat object containing spatial transcriptomics data.
+#' @param ref A Seurat object containing single-cell RNA-seq data used as a reference.
+#' @return A data frame with columns for `sample_id`, `platform`, and the Spearman correlation coefficient `value`.
+#' @export
+getCorrelation <- function(seu_obj, ref){
+  common_genes <- intersect(rownames(seu_obj), rownames(ref))
+  cor_res <- cor(
+    rowMeans(seu_obj[["RNA"]]$counts[common_genes,]),
+    rowMeans(ref[["RNA"]]$counts[common_genes,]),
+    method='spearman'
+  )
+  res <- data.frame(
+    sample_id = unique(seu_obj$sample_id),
+    platform = unique(seu_obj$platform),
+    value=cor_res
+  )
+  return(res)
+}
 
+#' @title getCellTypeCor
+#' @description
+#' This function subsets both the spatial transcriptomics dataset (`seu_obj`) and the single-cell RNA-seq reference (`ref`) into cell type-specific groups.
+#' It then computes the Spearman correlation coefficient for each cell type, providing a cell type-specific similarity metric between the datasets.
+#' @details
+#' Useful for detailed analysis of cell type-specific expression patterns, this function helps in understanding the concordance between spatial transcriptomics
+#' data and single-cell RNA-seq references at the level of individual cell types. It requires that `seu_obj` includes cell type predictions and that `ref` contains
+#' annotated cell types. The output is a list of correlation coefficients for each cell type, offering insights into which cell types show higher or lower similarity
+#' between the two datasets.
+#' @param seu_obj A Seurat object containing spatial transcriptomics data with cell type predictions (`celltype_pred`).
+#' @param ref A Seurat object containing single-cell RNA-seq data with annotated cell types (`cell_type`).
+#' @return A data frame with `cell_type` and the corresponding Spearman correlation coefficient for each cell type between `seu_obj` and
+#' @export
+getCellTypeCor <- function(seu_obj, ref){
+  cell_types <- levels(ref$cell_type)
 
-#######
-# Plotting
-#######
+  cor_list <- list()
+  for(i in 1:length(cell_types)){
+    print(paste0("Correlating: ", cell_types[i]))
+    cor_list[[i]] <- getCorrelation(
+      subset(seu_obj, celltype_pred == cell_types[i]),
+      subset(ref, cell_type == cell_types[i])
+    )
+  }
+  cor_list <- do.call(rbind, cor_list)
+  cor_list$cell_type <- cell_types
+  return(cor_list)
+}
+
+#' @title getClusterMetrics
+#' @description
+#' This function applies clustering analysis to a Seurat object (`seu_obj`) and calculates the Adjusted Rand Index (ARI)
+#' and Normalized Mutual Information (NMI) between the resulting clusters and a specified cell type prediction. These metrics
+#' are used to assess the quality of clustering and the agreement between predicted cell types and clustering outcomes.
+#' @details
+#' Clustering is performed on the `seu_obj` data, which is first normalized and scaled. PCA is then run, followed by neighbor finding
+#' and cluster identification. The ARI and NMI are calculated to evaluate the clustering quality, with ARI measuring the similarity
+#' between two data clusterings and NMI providing a normalized measure of the mutual dependence between the predicted cell types and
+#' the clusters. These metrics offer insights into the coherence of cell type predictions and the overall quality of the clustering process.
+#' @param seu_obj A Seurat object for which clustering metrics are to be calculated.
+#' @param metadata_col The metadata column in `seu_obj` that contains cell type predictions for comparison against clustering results.
+#'
+#' @return A data frame with sample identifiers, platforms, and the calculated ARI and NMI metrics.
+#' @importFrom Seurat NormalizeData ScaleData RunPCA FindNeighbors FindClusters
+#' @importFrom dplyr data_frame
+#' @importFrom bluster pairwiseRand
+#' @importFrom NMI NMI
+#' @export
+getClusterMetrics <- function(seu_obj, metadata_col){
+  print("Clustering data")
+  seu_obj <- seu_obj %>%
+    NormalizeData() %>%
+    ScaleData()
+
+  VariableFeatures(seu_obj) <- rownames(seu_obj)
+
+  seu_obj <- seu_obj %>%
+    RunPCA(verbose=F) %>%
+    FindNeighbors(dims=1:20) %>%
+    FindClusters(resolution=0.5)
+
+  ari <- bluster::pairwiseRand(seu_obj$seurat_clusters,
+                               seu_obj$celltype_pred,
+                               mode=('index'),
+                               adjusted=TRUE)
+
+  nmi <- NMI(
+    data.frame(cellid = colnames(seu_obj), cluster = seu_obj$seurat_clusters),
+    data.frame(cellid = colnames(seu_obj), cluster = seu_obj$celltype_pred)
+  )
+
+  res <- data.frame(
+    sample_id = unique(seu_obj$sample_id),
+    platform = unique(seu_obj$platform),
+    value=c(ari, nmi$value),
+    metric = c("ARI", "NMI")
+  )
+
+}
+
+######## Plotting ########
+
 # All plots assume input is a tidy data frame with the following columns:
 # 1) sample_id
 # 2) platform
 # 3) value (based on what is being plotted--from functions above)
 
 #' @title plotSampleLabel
-#' @param sample_meta A data frame containing at least two columns: `sample_id` and `platform`.
-#' @return A ggplot object representing the sample labels colored by platform.
+#' @description Performs Spearman correlation analysis for each cell type between spatial and reference datasets.
+#' @param sample_meta sample_meta
+#' @return Data frame with cell type-specific correlation values.
 #' @import ggplot2
 #' @export
 
@@ -935,45 +1844,38 @@ plotSampleLabel <- function(sample_meta){
   return(p)
 }
 
-#' @title plotPanelSize
-#' @param df A data frame expected to contain `sample_id` and `value`, where `value` represents the panel size.
-#' @return A ggplot object visualizing the panel sizes of samples.
-#' @export
+# plotPanelSize <- function(df){
+#   p <- ggplot(df, aes(x="", y=sample_id)) +
+#     geom_point(shape=21, color='black', alpha=0.8, stroke=1,
+#                aes(size=value, fill=value)) +
+#     geom_shadowtext(color = "black", size = 4, #fontface = "bold",
+#                     bg.colour = "white", bg.r = .2,
+#                     aes(label=scales::comma(value))) +
+#     scale_fill_gradientn(colours=viridis::mako(100)) +
+#     xlab("Panel size") + ylab("") +
+#     scale_size(range = c(6,12)) +
+#     scale_x_discrete(position='top',
+#                      labels = c("")) +
+#     theme_classic() +
+#     theme(
+#       legend.position='none',
+#       axis.text.y = element_blank(),
+#       axis.text.x = element_blank(),
+#       axis.title.x = element_text(size=12),
+#       axis.line.y = element_blank(),
+#       axis.ticks.y = element_blank()
+#     )
+#
+#   return(p)
+
+#}
+
+#' @title plotCellCount
+#' @description Computes and compares cell type proportions between spatial and reference datasets.
+#' @param df Dataframe.
+#' @return Plot.
 #' @import ggplot2
-#' @importFrom viridis mako
-#' @importFrom scales comma
-#' @importFrom shadowtext geom_shadowtext
-plotPanelSize <- function(df){
-  p <- ggplot(df, aes(x="", y=sample_id)) +
-    geom_point(shape=21, color='black', alpha=0.8, stroke=1,
-               aes(size=value, fill=value)) +
-    shadowtext::geom_shadowtext(color = "black", size = 4, #fontface = "bold",
-                    bg.colour = "white", bg.r = .2,
-                    aes(label=scales::comma(value))) +
-    scale_fill_gradientn(colours=viridis::mako(100)) +
-    xlab("Panel size") + ylab("") +
-    scale_size(range = c(6,12)) +
-    scale_x_discrete(position='top',
-                     labels = c("")) +
-    theme_classic() +
-    theme(
-      legend.position='none',
-      axis.text.y = element_blank(),
-      axis.text.x = element_blank(),
-      axis.title.x = element_text(size=12),
-      axis.line.y = element_blank(),
-      axis.ticks.y = element_blank()
-    )
-
-  return(p)
-
-}
-
-#' @title plotCellCount.
-#' @param df A data frame.
-#' @return A ggplot object.
 #' @export
-#' @import ggplot2
 
 plotCellCount <- function(df){
   p <- ggplot(df, aes(x="", y=sample_id)) +
@@ -993,9 +1895,10 @@ plotCellCount <- function(df){
   return(p)
 }
 
-#' @title plotTxPerCell.
-#' @param df A data frame.
-#' @return A ggplot object.
+#' @title plotTxPerCell
+#' @description Creates a scatter plot visualizing the number of transcripts per cell across samples.
+#' @param df Data frame with `sample_id` and `value` columns indicating sample IDs and the number of transcripts per cell, respectively.
+#' @return A ggplot object visualizing the number of transcripts per cell for each sample.
 #' @export
 #' @import ggplot2
 
@@ -1023,13 +1926,12 @@ plotTxPerCell <- function(df){
 
   return(p)
 }
-
-#' @title plotTxPerArea.
-#' @param df A data frame.
-#' @return A ggplot object.
+#' @title plotTxPerArea
+#' @description Generates a scatter plot to show the number of transcripts per unit area across samples.
+#' @param df Data frame with `sample_id` and `value` columns indicating sample IDs and the number of transcripts per unit area, respectively.
+#' @return A ggplot object depicting the distribution of transcripts per unit area for each sample.
 #' @export
 #' @import ggplot2
-
 plotTxPerArea <- function(df){
   p <- ggplot(df, aes(x="", y=sample_id)) +
     geom_point(shape=21, color='black', alpha=0.8, stroke=1,
@@ -1054,13 +1956,12 @@ plotTxPerArea <- function(df){
   return(p)
 }
 
-
-#' @title plotTxPerNuc.
-#' @param df A data frame.
-#' @return A ggplot object.
+#' @title Plot Transcripts Per Nucleus
+#' @description Produces a scatter plot that displays the number of transcripts per nucleus for each sample.
+#' @param df Data frame with `sample_id` and `value` columns for sample IDs and the number of transcripts per nucleus, respectively.
+#' @return A ggplot object illustrating the transcripts count per nucleus across samples.
 #' @export
 #' @import ggplot2
-
 plotTxPerNuc <- function(df){
   df$column <- ""
   p <- ggplot(df, aes(x=column, y=sample_id)) +
@@ -1086,12 +1987,12 @@ plotTxPerNuc <- function(df){
   return(p)
 }
 
-#' @title plotTxPerCellNorm.
-#' @param df A data frame.
-#' @return A ggplot object.
+#' @title plotTxPerCellNorm
+#' @description Creates a plot visualizing normalized transcripts per cell across samples.
+#' @param df Data frame with `sample_id` and normalized `value` columns.
+#' @return A ggplot object visualizing normalized transcripts per cell for each sample.
 #' @export
 #' @import ggplot2
-
 plotTxPerCellNorm <- function(df){
   p <- ggplot(df, aes(x="", y=sample_id)) +
     geom_point(shape=21, color='black', alpha=0.8, stroke=1,
@@ -1116,12 +2017,12 @@ plotTxPerCellNorm <- function(df){
   return(p)
 }
 
-#' @title plotFractionTxInCell.
-#' @param df A data frame.
-#' @return A ggplot object.
+#' @title plotFractionTxInCell
+#' @description Generates a bar plot showing the fraction of transcripts located within cells for each sample.
+#' @param df Data frame with `sample_id` and `value` columns indicating the fraction of transcripts in cells.
+#' @return A ggplot object depicting the fraction of transcripts within cells across samples.
 #' @export
 #' @import ggplot2
-
 plotFractionTxInCell <- function(df){
   p <- ggplot(df, aes(x=value, y=sample_id)) +
     geom_col(color='black', fill='grey90', stroke=1) +
@@ -1145,13 +2046,13 @@ plotFractionTxInCell <- function(df){
   return(p)
 }
 
-
-#' @title plotSignalRatio.
-#' @param df A data frame.
-#' @return A ggplot object.
+#plotTxPerCell_Intersect <- function()
+#' @title plotSignalRatio
+#' @description Creates a bar plot for the signal-to-noise ratio of gene expression across samples.
+#' @param df Data frame with `sample_id` and `value` columns indicating the mean log10-ratio of expression over noise.
+#' @return A ggplot object visualizing the signal-to-noise ratio for each sample.
 #' @export
 #' @import ggplot2
-
 plotSignalRatio <- function(df){
   p <- ggplot(df, aes(x=value, y=sample_id)) +
     geom_col(color='black', fill='grey90') +
@@ -1171,12 +2072,13 @@ plotSignalRatio <- function(df){
 
   return(p)
 }
-#' @title plotMeanExpression.
-#' @param df A data frame.
-#' @return A ggplot object.
-#' @export
 #' @import ggplot2
-#' @importFrom scales label_log
+#' @title plotMeanExpression
+#' @description Generates a jitter and boxplot visualizing the mean gene detection rate per cell across samples and cell types.
+#' @param df Data frame with `sample_id`, `value`, and `type` columns.
+#' @return A ggplot object depicting mean gene detection rates per cell, differentiated by cell type.
+#' @export
+
 plotMeanExpression <- function(df){
   p <- ggplot(df, aes(x=value, y=sample_id)) +
     geom_jitter(size=0.15, shape=16, aes(color=type),
@@ -1188,7 +2090,7 @@ plotMeanExpression <- function(df){
     scale_colour_manual(values=c("grey20", "firebrick")) +
     xlab("Mean gene\n detection per cell") + ylab("") +
     scale_x_log10(position='top', expand = c(0,0),
-                  labels = scales :: label_log(digits = 2)) +
+                  labels = label_log(digits = 2)) +
     theme_classic() +
     theme(
       legend.position='none',
@@ -1202,12 +2104,12 @@ plotMeanExpression <- function(df){
   return(p)
 }
 
-#' @title plotMaxExpression.
-#' @param df A data frame.
-#' @return A ggplot object.
+#' @title plotMaxExpression
+#' @description Creates a jitter and boxplot showing the maximal gene detection rate per cell across samples and platforms.
+#' @param df Data frame with `sample_id`, `value`, and `platform` columns.
+#' @return A ggplot object illustrating maximal gene detection rates per cell, differentiated by platform.
 #' @export
 #' @import ggplot2
-
 plotMaxExpression <- function(df){
   p <- ggplot(df, aes(x=value, y=sample_id)) +
     geom_jitter(size=0.15, shape=16, aes(color=platform)) +
@@ -1216,7 +2118,7 @@ plotMaxExpression <- function(df){
     scale_colour_manual(values = c("#59C134", "#14B3E6")) +
     xlab("Maximal gene\ndetection per cell") + ylab("") +
     scale_x_continuous(position='top', expand = c(0,0),
-                  limits = c(0,50), oob=squish) +
+                       limits = c(0,50), oob=squish) +
     theme_classic() +
     theme(
       legend.position='none',
@@ -1228,12 +2130,12 @@ plotMaxExpression <- function(df){
     )
 }
 
-#' @title plotMECR.
-#' @param df A data frame.
-#' @return A ggplot object.
+#' @title plotMECR
+#' @description Visualizes the MECR values across samples with a scatter plot.
+#' @param df Data frame with `sample_id` and `value` columns for MECR values.
+#' @return A ggplot object showing MECR values for each sample.
 #' @export
 #' @import ggplot2
-
 plotMECR <- function(df){
   p <- ggplot(df, aes(x="", y=sample_id)) +
     geom_point(shape=21, color='black', alpha=0.8, stroke=1,
@@ -1242,7 +2144,7 @@ plotMECR <- function(df){
                     bg.colour = "white", bg.r = .2,
                     aes(label=scales::comma(value))) +
     scale_fill_gradientn(colours=RColorBrewer::brewer.pal(9, "YlOrRd"),
-                         limits=c(0.01)) +
+                         limits=c(0,0.1)) +
     xlab("MECR") + ylab("") +
     scale_size(range = c(7,12), limits = c(0, 0.1)) +
     scale_x_discrete(position='top',
@@ -1260,12 +2162,12 @@ plotMECR <- function(df){
   return(p)
 }
 
-#' @title plotMorans.
-#' @param df A data frame.
-#' @return A ggplot object.
+#' @title plotMorans
+#' @description Creates a plot for Moran's I spatial autocorrelation values across samples.
+#' @param df Data frame with `sample_id`, `value`, and `type` columns for Moran's I values and sample types.
+#' @return A ggplot object depicting Moran's I spatial autocorrelation values, differentiated by sample type.
 #' @export
 #' @import ggplot2
-
 plotMorans <- function(df){
   p <- ggplot(df, aes(x=value, y=sample_id)) +
     geom_jitter(size=0.15, shape=16, aes(color=type),
@@ -1290,12 +2192,12 @@ plotMorans <- function(df){
   return(p)
 }
 
-#' @title plotSilhouette.
-#' @param df A data frame.
-#' @return A ggplot object.
+#' @title plotSilhouette
+#' @description Generates a bar plot showing mean silhouette width values for clustering quality across samples.
+#' @param df Data frame with `sample_id` and `value` columns for mean silhouette width values.
+#' @return A ggplot object visualizing mean silhouette width for each sample.
 #' @export
 #' @import ggplot2
-
 plotSilhouette <- function(df){
   p <- ggplot(df, aes(x=value, y=sample_id)) +
     geom_col(color='black', fill='grey90') +
@@ -1316,65 +2218,258 @@ plotSilhouette <- function(df){
   return(p)
 }
 
-#' @title plotSparsity.
-#' @param df A data frame.
-#' @return A ggplot object.
+#' @title plotCorrelation
+#' @description Creates scatter plots to visualize correlation between spatial and reference dataset expression values across samples.
+#' @param df Data frame with `sample_id`, `value_sample`, and `value_ref` columns indicating sample IDs and expression values in the spatial and reference datasets, respectively.
+#' @return A ggplot object showing correlation scatter plots for each sample, with log-transformed axes.
 #' @export
 #' @import ggplot2
-
-plotSparsity <- function(df){
-    p <- ggplot(df, aes(x="", y=sample_id)) +
-          geom_point(shape=21, color='black', alpha=0.8, stroke=1,
-          aes(size=value, fill=value)) +
-          geom_shadowtext(color = "black", size = 4, #fontface = "bold",
-          bg.colour = "white", bg.r = .2,
-          aes(label=scales::comma(value))) +
-          scale_fill_gradientn(colours=viridis::mako(100)) +
-          xlab("Sparsity") + ylab("") +
-          scale_size(range = c(7,12)) +
-          scale_x_discrete(position='top',
-          labels = c("")) +
-          theme_classic() +
-          theme(
-              legend.position='none',
-              axis.text.y = element_blank(),
-              axis.text.x = element_blank(),
-              axis.title.x = element_text(size=10),
-              axis.line.y = element_blank(),
-              axis.ticks.y = element_blank()
-             )
-    return(p)
-}
-
-#' @title plotEntropy.
-#' @param df A data frame.
-#' @return A ggplot object.
-#' @export
-#' @import ggplot2
-
-plotEntropy <- function(df){
-    p <- ggplot(df, aes(x="", y=sample_id)) +
-          geom_point(shape=21, color='black', alpha=0.8, stroke=1,
-          aes(size=value, fill=value)) +
-        geom_shadowtext(color = "black", size = 4, #fontface = "bold",
-          bg.colour = "white", bg.r = .2,
-          aes(label=scales::comma(value))) +
-          scale_fill_gradientn(colours=viridis::mako(100)) +
-          xlab("Entropy") + ylab("") +
-          scale_size(range = c(7,12)) +
-          scale_x_discrete(position='top',
-          labels = c("")) +
-          theme_classic() +
-          theme(
-            legend.position='none',
-            axis.text.y = element_blank(),
-            axis.text.x = element_blank(),
-            axis.title.x = element_text(size=10),
-            axis.line.y = element_blank(),
-            axis.ticks.y = element_blank()
-          )
+plotCorrelation <- function(df){
+  #facet_wrap order is opposite to axis text orders, so we'll flip the levels
+  df$sample_id <- factor(df$sample_id)
+  df$sample_id <- factor(df$sample_id, levels = rev(levels(df$sample_id)))
+  p <- ggplot(df, aes(x=value_ref, y=value_sample)) +
+    geom_point(size=0.5, shape=16, stroke=0, alpha=0.75) +
+    geom_abline(intercept = 0, slope = 1, linetype=2) +
+    scale_x_log10(labels = label_log(digits = 2), limits=c(1e-4, 10),
+                  oob=squish, position='top') +
+    scale_y_log10(labels = label_log(digits = 2), limits=c(1e-4, 10), oob=squish) +
+    xlab("snPATHO-seq\ncorrelation") + ylab("") +
+    facet_wrap(~sample_id, ncol=1) +
+    theme_bw() +
+    theme(axis.text = element_text(size=10, color="black"),
+          legend.position="none",
+          axis.title.x = element_text(size=12),
+          strip.text = element_blank(),
+          strip.background = element_blank())
   return(p)
 }
 
+#' @title plotCellTypeCor
+#' @description Visualizes correlation for each cell type across samples using jitter plots.
+#' @param df Data frame with `sample_id`, `value`, and `cell_type` columns.
+#' @return A ggplot object showing cell type-specific correlation for each sample.
+#' @export
+#' @import ggplot2
+plotCellTypeCor <- function(df){
+  p <- ggplot(df, aes(x=value, y = sample_id)) +
+    geom_jitter(shape=21, color='black', aes(fill=cell_type),
+                alpha=0.5, size=3, height=0.1) +
+    stat_summary(fun = mean, geom = "crossbar", width=0.5) +
+    scale_x_continuous(position='top', limits=c(0, 1),
+                       expand=c(0,0), breaks=c(0, 0.5, 1)) +
+    xlab("Cell type\ncorrelation") + ylab("") +
+    theme_classic() +
+    theme(
+      legend.position='none',
+      axis.text.y = element_blank(),
+      axis.text.x = element_text(size=10, color="black"),
+      axis.title.x = element_text(size=12),
+      axis.line.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      plot.margin = margin(5.5, 6.5, 5.5, 5.5, unit='pt')
+    )
+  return(p)
+}
+
+#' @title plotCellTypeProportion
+#' @description Creates bar plots to show the proportion of each cell type within samples.
+#' @param df Data frame with `group`, `prop`, `cell_type`, and `sample_id` columns.
+#' @return A ggplot object visualizing the proportion of each cell type within and across samples.
+#' @export
+#' @import ggplot2
+plotCellTypeProportion <- function(df){
+  p <- ggplot(df, aes(x=prop, y=group)) +
+    geom_bar(position="stack", stat="identity",
+             color='black', alpha=0.75,
+             aes(fill=cell_type), width=0.7) +
+    scale_x_continuous(position='top',
+                       limits=c(0,1), expand = c(0,0),
+                       breaks=c(0, 0.5, 1)) +
+    ylab("") + xlab("Cell type\nproportion") +
+    facet_wrap(~sample_id, ncol=1) +
+    theme_classic() +
+    theme(
+      panel.spacing = grid::unit(0, "lines"),
+      strip.background = element_blank(),
+      strip.text = element_blank(),
+      legend.position='none',
+      axis.text.y = element_text(size=10, color="black"),
+      axis.text.x = element_text(size=10, color="black"),
+      axis.title.x = element_text(size=12),
+      axis.line.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      plot.margin = margin(5.5, 6.5, 5.5, 5.5,
+                           unit = "pt")
+    )
+  return(p)
+}
+
+#' @title plotARI
+#' @description Generates a scatter plot visualizing ARI values across samples to assess clustering performance.
+#' @param cluster_metrics Data frame with `sample_id`, `value`, and `metric` columns, filtered for "ARI".
+#' @return A ggplot object depicting ARI values for each sample.
+#' @export
+#' @import ggplot2
+plotARI <- function(cluster_metrics){
+  df <- cluster_metrics %>% filter(metric == "ARI")
+
+  p <- ggplot(df, aes(x="", y=sample_id)) +
+    geom_point(shape=21, color='black', alpha=0.8, stroke=1,
+               aes(size=value, fill=value)) +
+    geom_shadowtext(color = "black", size = 4, #fontface = "bold",
+                    bg.colour = "white", bg.r = .2,
+                    aes(label=round(value, digits=2))) +
+    scale_fill_gradientn(colours=viridis::mako(100)) +
+    xlab("ARI") + ylab("") +
+    scale_size(range = c(6,12)) +
+    scale_x_discrete(position='top',
+                     labels = c("")) +
+    theme_classic() +
+    theme(
+      legend.position='none',
+      axis.text.y = element_blank(),
+      axis.text.x = element_blank(),
+      axis.title.x = element_text(size=12),
+      axis.line.y = element_blank(),
+      axis.ticks.y = element_blank()
+    )
+
+  return(p)
+}
+
+#' @title plotNMI
+#' @description Creates a scatter plot to visualize NMI values across samples, indicating the quality of clustering.
+#' @param cluster_metrics Data frame with `sample_id`, `value`, and `metric` columns, filtered for "NMI".
+#' @return A ggplot object showing NMI values for each sample.
+#' @export
+#' @import ggplot2
+plotNMI <- function(cluster_metrics){
+  df <- cluster_metrics %>% filter(metric == "NMI")
+
+  p <- ggplot(df, aes(x="", y=sample_id)) +
+    geom_point(shape=21, color='black', alpha=0.8, stroke=1,
+               aes(size=value, fill=value)) +
+    geom_shadowtext(color = "black", size = 4, #fontface = "bold",
+                    bg.colour = "white", bg.r = .2,
+                    aes(label=round(value, digits=2))) +
+    scale_fill_gradientn(colours=viridis::mako(100)) +
+    xlab("NMI") + ylab("") +
+    scale_size(range = c(6,12)) +
+    scale_x_discrete(position='top',
+                     labels = c("")) +
+    theme_classic() +
+    theme(
+      legend.position='none',
+      axis.text.y = element_blank(),
+      axis.text.x = element_blank(),
+      axis.title.x = element_text(size=12),
+      axis.line.y = element_blank(),
+      axis.ticks.y = element_blank()
+    )
+
+  return(p)
+}
+
+#' @title plotRCTD
+#' @description Generates boxplots for the maximum decomposition weights obtained from Robust Cell Type Deconvolution (RCTD) across samples.
+#' @param df Data frame with `sample_id` and `value` columns for maximum decomposition weights.
+#' @return A ggplot object showing boxplots of max decomposition weights for each sample.
+#' @export
+#' @import ggplot2
+plotRCTD <- function(df){
+  p <- ggplot(df, aes(x=value, y=sample_id)) +
+    geom_boxplot(color="black",
+                 alpha=0.5, outlier.size=0, outlier.colour = NA,
+                 fill="lightgrey", width=0.5) +
+    xlab("Max decomposition\nweight") + ylab("") +
+    scale_x_continuous(position='top', expand = c(0,0),
+                       limits=c(0, 1), breaks=c(0, 0.5, 1),
+                       oob=squish) +
+    #scale_x_log10(position='top', expand = c(0,0),
+    #              labels = label_log(digits = 2)) +
+    theme_classic() +
+    theme(
+      legend.position='none',
+      axis.text.y = element_blank(),
+      axis.text.x = element_text(size=10, color="black"),
+      axis.title.x = element_text(size=12),
+      axis.line.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      plot.margin = margin(5.5, 6.5, 5.5, 5.5, unit='pt')
+    )
+  return(p)
+}
+#' @import ggplot2
+## This function take a list with the results from the function getMetrics to plot the metrics gathered
+#' @title plotMetrics.
+#' @param metrics_list A list containing the metrics results.
+#' @param PlotAutocorr Logical; if `TRUE`, plots the autocorrelation metric. Default is `TRUE`.
+#' @param PlotSparsity Logical; if `TRUE`, plots the sparsity metric;Default is `TRUE`.
+#' @param PlotEntropy Logical; if `TRUE`, plots the entropy metric; Default is `TRUE`.
+#' @param PlotClusterSilhouette Logical; if `TRUE`, plots the cluster silhouette metric; Default is `TRUE`.
+#' @param ncol Integer; the number of columns in the plot grid; Default is 14.
+#' @param nrow Integer; the number of rows in the plot grid; Default is 1.
+#' @param rel_widths Numeric vector; relative widths of columns in the plot grid.
+#' @return A plot object created with cowplot::plot_grid.
+#' @importFrom cowplot plot_grid
+#' @export
+#' @import ggplot2
+# metrics_list <- list(
+#   sample_meta = sample_meta,
+#   cell_count = getNcells_test_1,
+#   tx_per_cell = getTxPerCell_test_1,
+#   tx_per_um2 = getTxPerArea_test_1,
+#   tx_per_nuc = getTxPerNuc_test_1,
+#   tx_per_cell_norm = getTxPerCell_test_1, #
+#   tx_fraction_in_cell = getCellTxFraction_test_1, #
+#   signal_ratio = getMeanSignalRatio_test_1,
+#   mean_expression = getMeanExpression_test_1,
+#   sparsity = getSparsity_test_1,
+#   entropy = getEntropy_test_1,
+#   silhouette = getSilhouetteWidth_test,
+#   morans = getMorans_test,
+#   mecr =mecrtest
+# )
 
 
+plotMetrics <- function(metrics_list = NULL, PlotAutocorr = T, PlotSparsity = T,
+                        PlotEntropy = T,
+                        PlotClusterSilhouette = T,
+                        ncol = 14, nrow = 1,
+                        rel_widths = c(0.75, 0.4, 0.5, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3,0.3,0.75, 0.75, 0.8, 0.3, 0.8, 0.8)) {
+  # PLOT
+  p0 <- plotSampleLabel(metrics_list[['sample_meta']])
+  #p1 <- plotPanelSize(metrics_list[["panel_size"]])
+  p2 <- plotCellCount(metrics_list[["cell_count"]])
+  p3 <- plotTxPerCell(metrics_list[["tx_per_cell"]])
+  p4 <- plotTxPerArea(metrics_list[["tx_per_um2"]])
+  p5 <- plotTxPerNuc(metrics_list[["tx_per_nuc"]])
+  p6 <- plotTxPerCellNorm(metrics_list[["tx_per_cell_norm"]])
+  p7 <- plotFractionTxInCell(metrics_list[["tx_fraction_in_cell"]])
+  p8 <- plotSignalRatio(metrics_list[["signal_ratio"]])
+  p9 <- plotMeanExpression(metrics_list[["mean_expression"]])
+  p10 <- plotMECR(metrics_list[["mecr"]])
+  if(PlotAutocorr == TRUE) {
+    p11 <- plotMorans(metrics_list[["morans"]])
+  }
+  if(PlotSparsity == TRUE) {
+    p13 <- plotSparsity(metrics_list[["sparsity"]])
+  }
+  if(PlotEntropy == TRUE) {
+    p14 <- plotEntropy(metrics_list[["entropy"]])
+  }
+  if(PlotClusterSilhouette == TRUE) {
+    p12 <- plotSilhouette(metrics_list[["silhouette"]])
+  }
+  p <- cowplot::plot_grid(p0, #p1,
+                          p2,
+                          p3, p4,
+                          p5, p6,  p7, p8, p9,
+                          p10,
+                          p11, p12,p13, p14,
+                          ncol=ncol, align='h',
+                          rel_widths = rel_widths , nrow = nrow)
+
+  return(p)
+}

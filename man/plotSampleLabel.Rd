@@ -7,11 +7,11 @@
 plotSampleLabel(sample_meta)
 }
 \arguments{
-\item{sample_meta}{A data frame containing at least two columns: \code{sample_id} and \code{platform}.}
+\item{sample_meta}{sample_meta}
 }
 \value{
-A ggplot object representing the sample labels colored by platform.
+Data frame with cell type-specific correlation values.
 }
 \description{
-plotSampleLabel
+Performs Spearman correlation analysis for each cell type between spatial and reference datasets.
 }

@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{plotMECR}
 \alias{plotMECR}
-\title{plotMECR.}
+\title{plotMECR}
 \usage{
 plotMECR(df)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{Data frame with \code{sample_id} and \code{value} columns for MECR values.}
 }
 \value{
-A ggplot object.
+A ggplot object showing MECR values for each sample.
 }
 \description{
-plotMECR.
+Visualizes the MECR values across samples with a scatter plot.
 }

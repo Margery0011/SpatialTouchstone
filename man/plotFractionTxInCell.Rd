@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{plotFractionTxInCell}
 \alias{plotFractionTxInCell}
-\title{plotFractionTxInCell.}
+\title{plotFractionTxInCell}
 \usage{
 plotFractionTxInCell(df)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{Data frame with \code{sample_id} and \code{value} columns indicating the fraction of transcripts in cells.}
 }
 \value{
-A ggplot object.
+A ggplot object depicting the fraction of transcripts within cells across samples.
 }
 \description{
-plotFractionTxInCell.
+Generates a bar plot showing the fraction of transcripts located within cells for each sample.
 }

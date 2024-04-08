@@ -19,6 +19,13 @@ The object must have 'sample_id' and 'platform' metadata for identification and 
 
 \item{features}{An optional vector of feature names (e.g., gene symbols) for which to calculate transcripts per unit area.
 Defaults to NULL, which means the calculation uses all available features in the RNA assay of the Seurat object.}
+
+\item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+and 'Merscope'. Note: 'Merscope' is currently not supported.}
+
+\item{cellSegMeta}{Path to CellsegMeta file.}
+
+\item{tx_file}{Path to transcription file.}
 }
 \value{
 Returns a data frame with three columns: \code{sample_id}, \code{platform}, and \code{value}. The \code{value} column contains

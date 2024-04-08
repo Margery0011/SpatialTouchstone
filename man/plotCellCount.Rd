@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{plotCellCount}
 \alias{plotCellCount}
-\title{plotCellCount.}
+\title{plotCellCount}
 \usage{
 plotCellCount(df)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{Dataframe.}
 }
 \value{
-A ggplot object.
+Plot.
 }
 \description{
-plotCellCount.
+Computes and compares cell type proportions between spatial and reference datasets.
 }

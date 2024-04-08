@@ -13,6 +13,8 @@ readSpatial(sample_id, path, platform = NULL, seurat = FALSE)
 
 \item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
 and 'Merscope'. Note: 'Merscope' is currently not supported.}
+
+\item{seurat}{Return a seurat object or not.}
 }
 \value{
 Returns a Seurat object containing the loaded and processed spatial transcriptomics data,

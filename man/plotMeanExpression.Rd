@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{plotMeanExpression}
 \alias{plotMeanExpression}
-\title{plotMeanExpression.}
+\title{plotMeanExpression}
 \usage{
 plotMeanExpression(df)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{Data frame with \code{sample_id}, \code{value}, and \code{type} columns.}
 }
 \value{
-A ggplot object.
+A ggplot object depicting mean gene detection rates per cell, differentiated by cell type.
 }
 \description{
-plotMeanExpression.
+Generates a jitter and boxplot visualizing the mean gene detection rate per cell across samples and cell types.
 }

@@ -1,0 +1,29 @@
+---
+title: "Introduction to SpatialTouchstone"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to SpatialTouchstone}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r}
+Sys.which(Sys.getenv("R_QPDF", "qpdf"))
+Sys.getenv("PATH")
+```
+
+```{r setup}
+library(SpatiaTouchstone)
+```
+
+```{r read data }
+#result <- readSpatial(sample_id = "test1",path="/mnt/scratch1/Touchstone_data/new_data/TOUCHSTONE_EAP_XRS_FFPE_PR_3_UOA_C_R1/",platform = "Xenium",seurat = FALSE)
+```
+
