@@ -447,10 +447,14 @@ getNcells <- function(seu_obj = NULL, expMat = 'path_to_expMat', platform = NULL
     ncell <- ncol(seu_obj)
   }
 
-  return(ncell)
+  res <- data.frame(
+    sample_id = unique(seu_obj$sample_id),
+    platform = unique(seu_obj$platform),
+    value=ncell
+  )
+  return(res)
 
 }
-
 
 
 #' @details
@@ -465,13 +469,14 @@ getNcells <- function(seu_obj = NULL, expMat = 'path_to_expMat', platform = NULL
 #'        If NULL (default), FDR is calculated for all features in the seu_obj.
 #' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
 #'        and 'Merscope'. Note: 'Merscope' is currently not supported.
+#' @param path Path to generate tx file.
 #' @param tx_file Path to transcription file.
 #' @export
 #' @importFrom data.table fread .N
 #' @importFrom Seurat CreateSeuratObject
 #' @return A data frame with columns for sample_id, platform, and the
 #' calculated mean FDR across the specified features.
-getGlobalFDR <- function(seu_obj = NULL, features = NULL, tx_file ='path_to_txFile',platform = NULL) {
+getGlobalFDR <- function(seu_obj = NULL, features = NULL, tx_file ='path_to_txFile', cellSegMeta = 'path_to_cellMeta', platform = NULL,path) {
 
   if(is.null(seu_obj)) {
     tx_df <- data.table::fread(tx_file)
@@ -499,7 +504,6 @@ getGlobalFDR <- function(seu_obj = NULL, features = NULL, tx_file ='path_to_txFi
 
     # Read Tx localization data
     tx_df <- readTxMeta(path, platform)
-
   }
 
 
@@ -520,13 +524,6 @@ getGlobalFDR <- function(seu_obj = NULL, features = NULL, tx_file ='path_to_txFi
     fdr = (expNeg / (expTable[expTable$target %in% i, ]$Count + expNeg) ) * (numGenes / numNeg) * 1/100
     expTable[target == i, FDR := fdr]
   }
-  if(!is.null(seu_obj)) {
-    res <- data.frame(
-      platform = unique(seu_obj@meta.data$platform),
-      value= mean(expTable$FDR)
-    )
-    return(res)
-  } else {
 
   if(is.null(features)) {
     return(mean(expTable$FDR))
@@ -534,7 +531,7 @@ getGlobalFDR <- function(seu_obj = NULL, features = NULL, tx_file ='path_to_txFi
     return(mean(expTable$FDR[expTable$target %in% features]))
   }
 
-}}
+}
 
 #' @title getTxPerCell.
 #' @description Calculates the average number of transcripts per cell for the given features.
@@ -790,6 +787,8 @@ getTxPerCell <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_exprMa
 #'        information on cellular localization of transcripts.
 #' @param features An optional vector of feature names (genes) for which to calculate the mean transcripts
 #'        per nucleus. If NULL (default), the function calculates this metric for all genes.
+#' @param tx_file Path to tx file.
+#' @param platform Platform.
 #' @return A data frame with the columns: `sample_id`, `platform`, and `value`, where `value` represents
 #'         the mean number of transcripts per nucleus across the specified features for the dataset.
 #'         This provides a focused view of nuclear gene expression.
@@ -797,8 +796,56 @@ getTxPerCell <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_exprMa
 #' @import Seurat
 #' @importFrom dplyr filter group_by summarize
 
-getTxPerNuc <- function(seu_obj,
-                        features=NULL){
+getTxPerNuc <- function(seu_obj=NULL, features=NULL, tx_file = NULL, platform = NULL){
+
+  if(is.null(seu_obj)) {
+    if(platform == 'Xenium') {
+      tx_df <- data.table::fread(tx_file)
+
+      if(is.null(features)) {
+        # subset the tx file with only existing assigned cells and features
+        # remove neg control probes
+        negProbes <- unique(tx_df$feature_name[grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', tx_df$feature_name)])
+        # number of txs in nucleus
+        nTx_nuc <- dim(tx_df[cell_id != 'UNASSIGNED' & overlaps_nucleus == 1 & !feature_name %in% negProbes])[1]
+        # number of cells
+        nCells <- length(unique(tx_df$cell_id))
+      }
+      if(!is.null(features)) {
+        nTx_nuc <- dim(tx_df[cell_id != 'UNASSIGNED' & overlaps_nucleus == 1 & !feature_name %in% negProbes & feature_name %in% features])[1]
+
+      }
+
+
+    }
+
+    if(platform == 'CosMx') {
+      tx_df <- data.table::fread(tx_file)
+
+      if(is.null(features)) {
+        # subset the tx file with only existing assigned cells and features
+        # remove neg control probes
+        negProbes <- unique(tx_df$target[grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', tx_df$target)])
+        # number of txs in nucleus
+        nTx_nuc <- nrow(tx_df[cell_ID != 0 & CellComp == 'Nuclear' & !target %in% negProbes])
+        # number of cells
+        nCells <- length(unique(tx_df$cell[tx_df$cell_ID != 0]))
+      }
+      if(!is.null(features)) {
+        nTx_nuc <- nrow(tx_df[cell_ID != 0 & CellComp == 'Nuclear' & !target %in% negProbes & target %in% features])
+
+      }
+
+    }
+
+    if(platform == 'Merscope') {
+
+    }
+
+    return(nTx_nuc / nCells)
+
+  }
+
   if(is.null(features)){
     features <- rownames(seu_obj)
   } else{
@@ -812,9 +859,9 @@ getTxPerNuc <- function(seu_obj,
   tx_df <- readTxMeta(path, platform)
 
   if(platform == "Xenium"){
-    tx_df <- dplyr::filter(tx_df, cell_id %in% colnames(seu_obj) &
-                             overlaps_nucleus == 1 &
-                             features %in% features) %>%
+    tx_df <- filter(tx_df, cell_id %in% colnames(seu_obj) &
+                      overlaps_nucleus == 1 &
+                      features %in% features) %>%
       group_by(cell_id) %>%
       summarize(nuc_counts = n())
 
@@ -822,9 +869,9 @@ getTxPerNuc <- function(seu_obj,
   } else if(platform == "CosMx"){
     tx_df$cell_id <- paste(tx_df$cell_ID, tx_df$fov, sep="_")
     tx_df <- tx_df %>%
-      dplyr::filter(cell_id %in% colnames(seu_obj) &
-                      CellComp == "Nuclear" &
-                      target %in% features) %>%
+      filter(cell_id %in% colnames(seu_obj) &
+               CellComp == "Nuclear" &
+               target %in% features) %>%
       group_by(cell_id) %>%
       summarize(nuc_counts = n())
 
@@ -843,6 +890,7 @@ getTxPerNuc <- function(seu_obj,
 
   return(res)
 }
+
 
 #' @title getMeanExpression.
 #' @description
@@ -929,7 +977,6 @@ getMeanExpression <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_e
   }
 
 }
-
 ### log-ratio of mean gene counts to mean neg probe counts
 #' @title getMeanSignalRatio.
 #' @description

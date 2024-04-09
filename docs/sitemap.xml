@@ -10,13 +10,37 @@
     <loc>/LICENSE.html</loc>
   </url>
   <url>
+    <loc>/articles/SpatialTouchstone-tutorial.html</loc>
+  </url>
+  <url>
+    <loc>/articles/index.html</loc>
+  </url>
+  <url>
     <loc>/authors.html</loc>
   </url>
   <url>
     <loc>/index.html</loc>
   </url>
   <url>
+    <loc>/reference/annotateData.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getAllMetrics.html</loc>
+  </url>
+  <url>
     <loc>/reference/getCellTxFraction.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getCellTypeCor.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getClusterMetrics.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getCorrelation.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getCorrelationExp.html</loc>
   </url>
   <url>
     <loc>/reference/getEntropy.html</loc>
@@ -29,6 +53,9 @@
   </url>
   <url>
     <loc>/reference/getMaxDetection.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getMaxRCTD.html</loc>
   </url>
   <url>
     <loc>/reference/getMaxRatio.html</loc>
@@ -44,6 +71,15 @@
   </url>
   <url>
     <loc>/reference/getMorans.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getNcells.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getPseudobulk.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getRCTD.html</loc>
   </url>
   <url>
     <loc>/reference/getSilhouetteWidth.html</loc>
@@ -64,7 +100,19 @@
     <loc>/reference/index.html</loc>
   </url>
   <url>
+    <loc>/reference/plotARI.html</loc>
+  </url>
+  <url>
     <loc>/reference/plotCellCount.html</loc>
+  </url>
+  <url>
+    <loc>/reference/plotCellTypeCor.html</loc>
+  </url>
+  <url>
+    <loc>/reference/plotCellTypeProportion.html</loc>
+  </url>
+  <url>
+    <loc>/reference/plotCorrelation.html</loc>
   </url>
   <url>
     <loc>/reference/plotEntropy.html</loc>
@@ -88,7 +136,13 @@
     <loc>/reference/plotMorans.html</loc>
   </url>
   <url>
+    <loc>/reference/plotNMI.html</loc>
+  </url>
+  <url>
     <loc>/reference/plotPanelSize.html</loc>
+  </url>
+  <url>
+    <loc>/reference/plotRCTD.html</loc>
   </url>
   <url>
     <loc>/reference/plotSampleLabel.html</loc>

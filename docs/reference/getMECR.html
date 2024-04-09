@@ -21,6 +21,12 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/SpatialTouchstone-tutorial.html">Introduction to SpatialTouchstone</a>
+  </div>
+</li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
@@ -38,7 +44,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>getMECR.</h1>
-      <small class="dont-index">Source: <a href="https://github.com/Margery0011/SpatiaTouchstone/blob/HEAD/R/utils.R" class="external-link"><code>R/utils.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/Margery0011/SpatiaTouchstone/blob/HEAD/R/utils_update_all.R" class="external-link"><code>R/utils_update_all.R</code></a></small>
       <div class="d-none name"><code>getMECR.Rd</code></div>
     </div>
 
@@ -48,13 +54,22 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">getMECR</span><span class="op">(</span><span class="va">seu_obj</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">getMECR</span><span class="op">(</span>seu_obj <span class="op">=</span> <span class="cn">NULL</span>, expMat <span class="op">=</span> <span class="st">"path_to_expMat"</span>, platform <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>seu_obj</dt>
 <dd><p>A seurat object.</p></dd>
+
+
+<dt>expMat</dt>
+<dd><p>Path to exprMatrix file.</p></dd>
+
+
+<dt>platform</dt>
+<dd><p>The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+and 'Merscope'. Note: 'Merscope' is currently not supported.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -64,6 +79,13 @@
 <p>A data frame containing the <code>sample_id</code>, <code>platform</code>, and the computed
 MECR value. The MECR value is rounded to three decimal places and represents
 the average mutually exclusive co-expression rate across the selected markers.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Based on a predefined set of markers and their associated cell types, this function computes the rate
+at which pairs of markers are expressed in mutually exclusive patterns within cells. The calculation is limited
+to markers found in the dataset and can be adjusted to focus on a subset by specifying it. The result is a
+single MECR value that quantifies the overall mutually exclusive co-expression pattern, rounded to three decimal places.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

@@ -21,6 +21,12 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/SpatialTouchstone-tutorial.html">Introduction to SpatialTouchstone</a>
+  </div>
+</li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
@@ -38,7 +44,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>getMeanSignalRatio.</h1>
-      <small class="dont-index">Source: <a href="https://github.com/Margery0011/SpatiaTouchstone/blob/HEAD/R/utils.R" class="external-link"><code>R/utils.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/Margery0011/SpatiaTouchstone/blob/HEAD/R/utils_update_all.R" class="external-link"><code>R/utils_update_all.R</code></a></small>
       <div class="d-none name"><code>getMeanSignalRatio.Rd</code></div>
     </div>
 
@@ -54,18 +60,28 @@
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>seu_obj</dt>
-<dd><p>A Seurat object.</p></dd>
+<dd><p>A Seurat object, expected to have both 'RNA' and 'ControlProbe'
+assays for calculating mean expression levels of genes and negative control probes, respectively.</p></dd>
 
 
 <dt>features</dt>
-<dd><p>Optional; specifies which genes to include in the calculation. If NULL, all genes in the RNA assay are considered.</p></dd>
+<dd><p>An optional vector of gene names for which to calculate the mean log-ratio. If NULL, the calculation
+is performed for all genes present in the 'RNA' assay of the seu_obj.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>A data frame with sample_id, platform, and the calculated mean log-ratio.</p>
+<p>A data frame with three columns: <code>sample_id</code>, <code>platform</code>, and <code>value</code>, where <code>value</code> represents the calculated
+mean log-ratio of gene expression to negative control probe expression for the selected genes. This summary can be
+used to assess the signal-to-noise ratio in the dataset.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Computes the log-ratio of the mean expression levels of specified genes (or all genes if none are specified)
+to the mean expression levels of negative control probes within a Seurat object. This metric can provide insights into
+the overall signal strength relative to background noise levels.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
