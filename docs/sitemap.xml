@@ -1,177 +1,180 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>/404.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/404.html</loc>
   </url>
   <url>
-    <loc>/LICENSE-text.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/LICENSE-text.html</loc>
   </url>
   <url>
-    <loc>/LICENSE.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/LICENSE.html</loc>
   </url>
   <url>
-    <loc>/articles/SpatialTouchstone-tutorial.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/articles/SpatiaTouchstone.html</loc>
   </url>
   <url>
-    <loc>/articles/index.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/articles/SpatialTouchstone-tutorial.html</loc>
   </url>
   <url>
-    <loc>/authors.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/articles/index.html</loc>
   </url>
   <url>
-    <loc>/index.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/authors.html</loc>
   </url>
   <url>
-    <loc>/reference/annotateData.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/index.html</loc>
   </url>
   <url>
-    <loc>/reference/getAllMetrics.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/annotateData.html</loc>
   </url>
   <url>
-    <loc>/reference/getCellTxFraction.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getAllMetrics.html</loc>
   </url>
   <url>
-    <loc>/reference/getCellTypeCor.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getCellTxFraction.html</loc>
   </url>
   <url>
-    <loc>/reference/getClusterMetrics.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getCellTypeCor.html</loc>
   </url>
   <url>
-    <loc>/reference/getCorrelation.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getClusterMetrics.html</loc>
   </url>
   <url>
-    <loc>/reference/getCorrelationExp.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getCorrelation.html</loc>
   </url>
   <url>
-    <loc>/reference/getEntropy.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getCorrelationExp.html</loc>
   </url>
   <url>
-    <loc>/reference/getGlobalFDR.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getEntropy.html</loc>
   </url>
   <url>
-    <loc>/reference/getMECR.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getGlobalFDR.html</loc>
   </url>
   <url>
-    <loc>/reference/getMaxDetection.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getMECR.html</loc>
   </url>
   <url>
-    <loc>/reference/getMaxRCTD.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getMaxDetection.html</loc>
   </url>
   <url>
-    <loc>/reference/getMaxRatio.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getMaxRCTD.html</loc>
   </url>
   <url>
-    <loc>/reference/getMeanExpression.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getMaxRatio.html</loc>
   </url>
   <url>
-    <loc>/reference/getMeanSignalRatio.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getMeanExpression.html</loc>
   </url>
   <url>
-    <loc>/reference/getMetrics.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getMeanSignalRatio.html</loc>
   </url>
   <url>
-    <loc>/reference/getMorans.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getMetrics.html</loc>
   </url>
   <url>
-    <loc>/reference/getNcells.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getMorans.html</loc>
   </url>
   <url>
-    <loc>/reference/getPseudobulk.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getNcells.html</loc>
   </url>
   <url>
-    <loc>/reference/getRCTD.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getPseudobulk.html</loc>
   </url>
   <url>
-    <loc>/reference/getSilhouetteWidth.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getRCTD.html</loc>
   </url>
   <url>
-    <loc>/reference/getSparsity.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getSilhouetteWidth.html</loc>
   </url>
   <url>
-    <loc>/reference/getTxPerArea.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getSparsity.html</loc>
   </url>
   <url>
-    <loc>/reference/getTxPerCell.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getTxPerArea.html</loc>
   </url>
   <url>
-    <loc>/reference/getTxPerNuc.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getTxPerCell.html</loc>
   </url>
   <url>
-    <loc>/reference/index.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/getTxPerNuc.html</loc>
   </url>
   <url>
-    <loc>/reference/plotARI.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/index.html</loc>
   </url>
   <url>
-    <loc>/reference/plotCellCount.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotARI.html</loc>
   </url>
   <url>
-    <loc>/reference/plotCellTypeCor.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotCellCount.html</loc>
   </url>
   <url>
-    <loc>/reference/plotCellTypeProportion.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotCellTypeCor.html</loc>
   </url>
   <url>
-    <loc>/reference/plotCorrelation.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotCellTypeProportion.html</loc>
   </url>
   <url>
-    <loc>/reference/plotEntropy.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotCorrelation.html</loc>
   </url>
   <url>
-    <loc>/reference/plotFractionTxInCell.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotEntropy.html</loc>
   </url>
   <url>
-    <loc>/reference/plotMECR.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotFractionTxInCell.html</loc>
   </url>
   <url>
-    <loc>/reference/plotMaxExpression.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotMECR.html</loc>
   </url>
   <url>
-    <loc>/reference/plotMeanExpression.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotMaxExpression.html</loc>
   </url>
   <url>
-    <loc>/reference/plotMetrics.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotMeanExpression.html</loc>
   </url>
   <url>
-    <loc>/reference/plotMorans.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotMetrics.html</loc>
   </url>
   <url>
-    <loc>/reference/plotNMI.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotMorans.html</loc>
   </url>
   <url>
-    <loc>/reference/plotPanelSize.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotNMI.html</loc>
   </url>
   <url>
-    <loc>/reference/plotRCTD.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotPanelSize.html</loc>
   </url>
   <url>
-    <loc>/reference/plotSampleLabel.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotRCTD.html</loc>
   </url>
   <url>
-    <loc>/reference/plotSignalRatio.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotSampleLabel.html</loc>
   </url>
   <url>
-    <loc>/reference/plotSilhouette.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotSignalRatio.html</loc>
   </url>
   <url>
-    <loc>/reference/plotSparsity.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotSilhouette.html</loc>
   </url>
   <url>
-    <loc>/reference/plotTxPerArea.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotSparsity.html</loc>
   </url>
   <url>
-    <loc>/reference/plotTxPerCell.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotTxPerArea.html</loc>
   </url>
   <url>
-    <loc>/reference/plotTxPerCellNorm.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotTxPerCell.html</loc>
   </url>
   <url>
-    <loc>/reference/plotTxPerNuc.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotTxPerCellNorm.html</loc>
   </url>
   <url>
-    <loc>/reference/readSpatial.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/plotTxPerNuc.html</loc>
   </url>
   <url>
-    <loc>/reference/readTxMeta.html</loc>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/readSpatial.html</loc>
+  </url>
+  <url>
+    <loc>https://margery0011.github.io/SpatiaTouchstone/reference/readTxMeta.html</loc>
   </url>
 </urlset>

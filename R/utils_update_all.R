@@ -471,6 +471,7 @@ getNcells <- function(seu_obj = NULL, expMat = 'path_to_expMat', platform = NULL
 #'        and 'Merscope'. Note: 'Merscope' is currently not supported.
 #' @param path Path to generate tx file.
 #' @param tx_file Path to transcription file.
+#' @param cellSegMeta Path to cellMeta.
 #' @export
 #' @importFrom data.table fread .N
 #' @importFrom Seurat CreateSeuratObject

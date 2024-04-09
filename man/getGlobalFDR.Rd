@@ -21,6 +21,8 @@ If NULL (default), FDR is calculated for all features in the seu_obj.}
 
 \item{tx_file}{Path to transcription file.}
 
+\item{cellSegMeta}{Path to cellMeta.}
+
 \item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
 and 'Merscope'. Note: 'Merscope' is currently not supported.}
 
