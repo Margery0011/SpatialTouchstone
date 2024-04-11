@@ -4,21 +4,21 @@ Welcome to `SpatialTouchstone`, an innovative tool designed to facilitate qualit
 
 ## Overview
 
-Spatialomics technologies are revolutionizing how we understand biological tissues, enabling the mapping of molecular compositions at unprecedented spatial resolutions. However, with great power comes great complexity. The interpretation of spatial omics data requires robust quality control measures to ensure the reliability and reproducibility of the findings. `SpatialTouchstone` is developed to meet this need, providing a comprehensive suite of quality control metrics specifically tailored for spatial omics data.
+Spatial omic technologies are revolutionizing how we understand biological tissues, enabling the mapping of molecular compositions at unprecedented spatial resolutions. However, with great power comes great complexity. The interpretation of spatial omics data requires robust quality control measures to ensure the reliability and reproducibility of the findings. `SpatialTouchstone` is developed to meet this need, providing a comprehensive suite of quality control metrics specifically tailored for spatial omics data.
 
 ## Functions
 
 ### readSpatial
 
-Reads and preprocesses spatial transcriptomics data from a specified path for a given platform. The function supports 'Xenium' and 'CosMx' platforms, performing platform-specific loading and preprocessing steps. This includes loading the data, annotating it with sample metadata, and processing cell metadata. For 'Xenium', it adds additional cell metadata and tissue coordinates as an embedding for custom plotting. For 'CosMx', it fixes assays to separate targeting and non-targeting probes, adds additional cell metadata, and includes tissue coordinates as an embedding. 'Merscope' platform support is under development. Regardless of platform, data is stored in an assay named "RNA" for convenient and for each platform, this table will be used by subsequent functions.
+Reads and preprocesses spatial transcriptomics data from a specified path for a given imaging based platform. The function supports 'Xenium' and 'CosMx' platforms, performing platform-specific loading and preprocessing steps. This includes loading the data, annotating it with sample metadata and processing cell metadata. For 'Xenium', it adds additional cell metadata and tissue coordinates as an embedding for custom plotting. For 'CosMx', it separates targeting and non-targeting probes, adds additional cell metadata and includes tissue coordinates as an embedding. 'Merscope' platform support is under development. Regardless of platform, data is stored in an assay named "RNA" for convenient and for each platform, this table will be used by subsequent functions.
 
 ### readTxMeta
 
-Reads transcriptome metadata from a specified path, depending on the platform specified. Currently supports 'Xenium' and 'CosMx' platforms. For 'Xenium', it reads 'transcripts.csv.gz' and renames the 'feature_name' column to 'target' for consistency. For 'CosMx', it reads the appropriate transcriptome file matched by '\*tx_file.csv.gz'. 'Merscope' platform support is under development. For each platform, This table will be used by subsequent functions.
+Reads transcriptome metadata from a specified path, depending on the platform specified. Currently supports 'Xenium' and 'CosMx' platforms. For 'Xenium', it reads 'transcripts.csv.gz' and renames the 'feature_name' column to 'target' for consistency. For 'CosMx', it reads the appropriate transcriptome file matched by '\*tx_file.csv.gz'. 'Merscope' platform support is under development. For each platform, this table will be used by subsequent functions.
 
 ### getGlobalFDR
 
-It calculate Specificity as Global False Discovery Rate (FDR) for specified features (or all features by default) in a Seurat object. It leverages transcript localization data to calculate FDR based on the proportion of negative control or blank barcode expressions compared to the expression of actual genes.
+It calculate 'specificity' as Global False Discovery Rate (FDR) for specified features (or all features by default) in a Seurat object. It leverages transcript localization data to calculate FDR based on the proportion of negative control or blank barcode expressions compared to the expression of actual genes.
 
 ### getTxPerCell
 
@@ -50,7 +50,7 @@ Identifies the maximum mean expression value among the specified features (or al
 
 ### getMaxDetection
 
-Calculates the distribution of maximal values by identifying the maximal expression values across the specified set of features (or all features if none are specified) within the dataset. This illustrates the upper bounds of gene expression, providing crucial information for assessing the dataset's dynamic range and the sensitivity of detection methods used in the experiment. The function aggregates these maximal values and presents them in a data frame, facilitating further analysis of the expression distribution and detection efficiency across different genes.
+Calculates the distribution of maximal values by identifying the maximal expression values across the specified set of features (or all features if none are specified) within the dataset. This function illustrates the upper bounds of gene expression, providing crucial information for assessing the dataset's dynamic range and the sensitivity of detection methods used in the experiment. The function aggregates these maximal values and presents them in a data frame, facilitating further analysis of the expression distribution and detection efficiency across different genes.
 
 ### getMECR
 
