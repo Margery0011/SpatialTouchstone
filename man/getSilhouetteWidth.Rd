@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_update_all.R
 \name{getSilhouetteWidth}
 \alias{getSilhouetteWidth}
-\title{getSilhouetteWidth.}
+\title{getSilhouetteWidth}
 \usage{
 getSilhouetteWidth(seu_obj)
 }
@@ -14,7 +14,7 @@ A data frame containing the \code{sample_id}, \code{platform},
 and the average silhouette width across all clusters, rounded to three decimal places.
 }
 \description{
-It calculates silhouette width as cluster evaluation.
+Calculates the silhouette width which provides a metric for evaluating consistency within data clusters.
 }
 \details{
 The silhouette width calculation involves preprocessing steps including normalization and scaling of the data, PCA for dimensionality reduction, and clustering.

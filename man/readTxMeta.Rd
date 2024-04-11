@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_update_all.R
 \name{readTxMeta}
 \alias{readTxMeta}
-\title{readTxMeta.}
+\title{readTxMeta}
 \usage{
 readTxMeta(path, platform)
 }
@@ -18,8 +18,8 @@ renamed to 'target'. For 'CosMx', the transcriptome file matching '*tx_file.csv.
 No return value for 'Merscope' as it stops execution with an error message.
 }
 \description{
-It reads in the transcript localization/metadata table.
-For each platform, This table will be used by subsequent functions.
+Reads the transcript localization and metadata table.
+This table will be used by subsequent function in this package.
 }
 \details{
 #' This function reads transcriptome metadata from a specified path, depending on the platform specified.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_update_all.R
 \name{getTxPerArea}
 \alias{getTxPerArea}
-\title{getTxPerArea.}
+\title{getTxPerArea}
 \usage{
 getTxPerArea(
   seu_obj = NULL,
@@ -34,7 +34,7 @@ This data frame provides a concise summary of transcriptional activity normalize
 critical for downstream analyses, especially in studies where cell morphology and size are variable.
 }
 \description{
-Calculate Mean Transcripts per Unit Area
+Calculates the Mean Transcripts per Unit Area.
 }
 \details{
 This function calculates the mean number of transcripts per unit area for specified features (genes) in a Seurat object.

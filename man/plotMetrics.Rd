@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_update_all.R
 \name{plotMetrics}
 \alias{plotMetrics}
-\title{plotMetrics.}
+\title{plotMetrics}
 \usage{
 plotMetrics(
   metrics_list = NULL,
@@ -37,5 +37,5 @@ plotMetrics(
 A plot object created with cowplot::plot_grid.
 }
 \description{
-plotMetrics.
+Generates plots from technical metrics in spatial touchstone.
 }

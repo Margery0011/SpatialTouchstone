@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_update_all.R
 \name{readSpatial}
 \alias{readSpatial}
-\title{readSpatial.}
+\title{readSpatial}
 \usage{
 readSpatial(sample_id, path, platform = NULL, seurat = FALSE)
 }
@@ -22,7 +22,8 @@ including sample metadata, cell metadata, and embeddings for tissue coordinates.
 structure and content of the returned object vary depending on the platform.
 }
 \description{
-readSaptial reads in data from either Xenium, CosMx, of MERSCOPE and outputs a seurat object with some common metadata e for downstream comparison.
+Reads data from either imaging based spatial transcriptomic (CosMx, MERSCOPE, Xenium)
+and outputs a seurat object(seu_obj) with some common metadata for downstream comparison.
 }
 \details{
 Reads and preprocesses spatial transcriptomics data from a specified path for a given platform.

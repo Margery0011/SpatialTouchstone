@@ -13,5 +13,5 @@ plotNMI(cluster_metrics)
 A ggplot object showing NMI values for each sample.
 }
 \description{
-Creates a scatter plot to visualize NMI values across samples, indicating the quality of clustering.
+Creates a scatter plot to visualize Normalized Mutual Information (NMI) values across samples, indicating the quality of clustering.
 }

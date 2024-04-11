@@ -15,9 +15,9 @@ getClusterMetrics(seu_obj, metadata_col)
 A data frame with sample identifiers, platforms, and the calculated ARI and NMI metrics.
 }
 \description{
-This function applies clustering analysis to a Seurat object (\code{seu_obj}) and calculates the Adjusted Rand Index (ARI)
-and Normalized Mutual Information (NMI) between the resulting clusters and a specified cell type prediction. These metrics
-are used to assess the quality of clustering and the agreement between predicted cell types and clustering outcomes.
+Applies the clustering analysis to a Seurat object (seu_obj) to calculate the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI)
+between the resulting clusters and a specified cell type prediction.
+ARI and NMI are metrics used to assess the quality of clustering and the agreement between predicted cell types and clustering outcomes.
 }
 \details{
 Clustering is performed on the \code{seu_obj} data, which is first normalized and scaled. PCA is then run, followed by neighbor finding

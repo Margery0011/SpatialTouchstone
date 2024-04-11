@@ -17,7 +17,8 @@ getNcells(seu_obj = NULL, expMat = "path_to_expMat", platform = NULL)
 An integer indicating the total number of cells in the dataset.
 }
 \description{
-Calculates the number of cells present in a given dataset, supporting both Seurat object input and direct matrix file paths for platforms like Xenium and CosMx.
+Calculates the number of cells present in a given dataset, supporting both Seurat object input(seu_obj)
+and direct matrix file paths for imaging based spatial transcriptomic platforms such as Xenium and CosMx.
 }
 \details{
 The function \code{getNcells} offers flexibility in determining cell counts, catering to different types of input. For \code{Xenium} platform datasets, it expects the path to a 'matrix.mtx.gz'

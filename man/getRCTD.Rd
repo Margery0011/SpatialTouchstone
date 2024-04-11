@@ -15,8 +15,8 @@ getRCTD(seu_obj, ref)
 A RCTD object containing the results of the deconvolution, including cell type weights for each spatial location.
 }
 \description{
-Performs cell type deconvolution on spatial transcriptomics data. This function requires a Seurat object with spatial transcriptomics data (\code{seu_obj})
-and a reference Seurat object (\code{ref}). It filters out cells with fewer than 10 transcripts to improve accuracy and uses RCTD for cell type deconvolution.
+Performs cell type deconvolution on spatial transcriptomics data. It requires a Seurat object with spatial transcriptomics data (seu_obj) and a reference Seurat object (ref).
+It filters out cells with fewer than 10 transcripts to improve accuracy and uses the Robust Cell Type Deconvolution (RCTD) metric for cell type deconvolution.
 }
 \details{
 The function first prepares the reference data by extracting counts, cell type annotations, and UMI counts. The reference dataset is then used to construct

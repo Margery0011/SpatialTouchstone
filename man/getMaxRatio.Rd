@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_update_all.R
 \name{getMaxRatio}
 \alias{getMaxRatio}
-\title{getMaxRatio.}
+\title{getMaxRatio}
 \usage{
 getMaxRatio(
   seu_obj = NULL,
@@ -27,7 +27,7 @@ and 'Merscope'. Note: 'Merscope' is currently not supported.}
 A data frame with \code{sample_id}, \code{platform}, and the calculated \code{value} of the log-ratio.
 }
 \description{
-It calculateds the Log-ratio of highest mean exp vs. mean noise.
+Calculates the Log-ratio of highest mean expression vs. mean noise.
 }
 \details{
 The function identifies the maximum mean expression value among the specified features

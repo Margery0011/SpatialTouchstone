@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_update_all.R
 \name{getCellTxFraction}
 \alias{getCellTxFraction}
-\title{getCellTxFraction.}
+\title{getCellTxFraction}
 \usage{
 getCellTxFraction(
   seu_obj = NULL,
@@ -30,7 +30,7 @@ A data frame containing the calculated fraction of transcripts in cells, along w
 A data frame with probe type (Gene or Control), the mean expression values, and the associated sample and platform identifiers.
 }
 \description{
-It calculates fraction of transcripts in cells.
+Calculates fraction of transcripts in cells from spatial transcriptomic data.
 }
 \details{
 The function works by reading transcript metadata for the given sample and platform, then filtering for the specified features (if any).

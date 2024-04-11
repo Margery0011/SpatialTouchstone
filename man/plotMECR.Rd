@@ -13,5 +13,5 @@ plotMECR(df)
 A ggplot object showing MECR values for each sample.
 }
 \description{
-Visualizes the MECR values across samples with a scatter plot.
+Visualizes the Mutually Exclusive Co-expression Rate (MECR) values across samples with a scatter plot.
 }

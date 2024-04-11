@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_update_all.R
 \name{getEntropy}
 \alias{getEntropy}
-\title{getEntropy.}
+\title{getEntropy}
 \usage{
 getEntropy(
   seu_obj = NULL,
@@ -27,7 +27,7 @@ and 'Merscope'. Note: 'Merscope' is currently not supported.}
 A data frame with the \code{sample_id}, \code{platform}, and the entropy value of the RNA count matrix, rounded to three decimal places.
 }
 \description{
-Computes the entropy of the RNA count matrix within a Seurat object.
+Calculates the entropy of the RNA count matrix within a Seurat object (seu_obj).
 }
 \details{
 Entropy is used to quantify the diversity or uniformity of gene expression across the dataset. This function calculates the entropy of the RNA count matrix, reflecting the distribution of gene expression levels.

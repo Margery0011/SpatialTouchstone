@@ -15,8 +15,8 @@ getCorrelationExp(seu_obj, ref)
 A data frame with columns for \code{sample_id}, \code{platform}, \code{gene}, \code{value_sample}, \code{value_ref}, and \code{neg_probe_signal}.
 }
 \description{
-Identifies common genes between a spatial transcriptomics dataset (\code{seu_obj}) and a single-cell RNA-seq reference dataset (\code{ref}).
-It computes the mean expression levels of these genes in both datasets and includes the mean signal of control probes from \code{seu_obj}.
+Identifies common genes between a spatial transcriptomics dataset (seu_obj) and a single-cell RNA-seq reference dataset (ref).
+It computes the mean expression levels of these genes in both datasets while including the mean signal of control probes from seu_obj.
 This function is useful for preparing data for correlation analyses or visual comparison between datasets.
 }
 \details{

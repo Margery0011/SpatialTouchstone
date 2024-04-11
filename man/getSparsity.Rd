@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_update_all.R
 \name{getSparsity}
 \alias{getSparsity}
-\title{getSparsity.}
+\title{getSparsity}
 \usage{
 getSparsity(
   seu_obj = NULL,
@@ -27,7 +27,7 @@ and 'Merscope'. Note: 'Merscope' is currently not supported.}
 A data frame.
 }
 \description{
-It shows the sparsity (as a count or proportion) of a matrix.
+Calculates the sparsity (as a count or proportion) of a gene expression count matrix.
 }
 \details{
 For example, .99 sparsity means 99\% of the values are zero. Similarly, a sparsity of 0 means the matrix is fully dense.

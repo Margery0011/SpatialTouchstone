@@ -96,10 +96,12 @@
 <p>Here, I am using An Xenium data as an example, using
 <code>readSpatial</code> function.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">expMat</span> <span class="op">=</span><span class="st">"/mnt/scratch1/Touchstone_data/new_data/TOUCHSTONE_EAP_XRS_FFPE_PR_3_UOA_C_R1/cell_feature_matrix"</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Do not return a seurat object </span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readSpatial.html">readSpatial</a></span><span class="op">(</span>sample_id <span class="op">=</span> <span class="st">"test1"</span>,path<span class="op">=</span><span class="st">"/mnt/scratch1/Touchstone_data/new_data/TOUCHSTONE_EAP_XRS_FFPE_PR_3_UOA_C_R1/"</span>,platform <span class="op">=</span> <span class="st">"Xenium"</span>,seurat <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Reading: test1"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $test1</span></span>
 <span><span class="co">#&gt; $test1$expMatrix</span></span>
 <span><span class="co">#&gt; 541 x 80939 sparse Matrix of class "dgTMatrix"</span></span>
@@ -1234,29 +1236,12 @@
 <span><span class="co">#&gt; 9243889:            170</span></span></code></pre></div>
 <p>It can return a <code>Seurat</code> Object by seting the
 <code>seurat=TRUE</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Return a seurat object </span></span>
 <span><span class="va">result_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readSpatial.html">readSpatial</a></span><span class="op">(</span>sample_id <span class="op">=</span> <span class="st">"test1"</span>,path<span class="op">=</span><span class="st">"/mnt/scratch1/Touchstone_data/new_data/TOUCHSTONE_EAP_XRS_FFPE_PR_3_UOA_C_R1/"</span>,platform <span class="op">=</span> <span class="st">"Xenium"</span>,seurat <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Reading: test1"</span></span>
 <span><span class="co">#&gt; [1] "Loading Xenium data"</span></span>
 <span><span class="co">#&gt; 10X data contains more than one type and is being returned as a list containing matrices of each type.</span></span>
-<span><span class="co">#&gt; Warning: Feature names cannot have underscores ('_'), replacing with dashes</span></span>
-<span><span class="co">#&gt; ('-')</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning: Feature names cannot have underscores ('_'), replacing with dashes</span></span>
-<span><span class="co">#&gt; ('-')</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning: Feature names cannot have underscores ('_'), replacing with dashes</span></span>
-<span><span class="co">#&gt; ('-')</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning: Feature names cannot have underscores ('_'), replacing with dashes</span></span>
-<span><span class="co">#&gt; ('-')</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning: Feature names cannot have underscores ('_'), replacing with dashes</span></span>
-<span><span class="co">#&gt; ('-')</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning: Feature names cannot have underscores ('_'), replacing with dashes</span></span>
-<span><span class="co">#&gt; ('-')</span></span>
 <span><span class="co">#&gt; [1] "Getting additional cell metadata"</span></span>
 <span><span class="co">#&gt; [1] "Adding tissue coordinates as embedding"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">result_seu</span><span class="op">)</span></span>
@@ -1274,24 +1259,41 @@
 <p>We have mutliple QC functions, when using seurat object as the input,
 it will return a dataframe which can be used to generate plot using our
 plot functions.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">getTxPerCell_seu</span><span class="op">&lt;-</span> <span class="fu"><a href="../reference/getTxPerCell.html">getTxPerCell</a></span><span class="op">(</span>expMat<span class="op">=</span><span class="st">"/mnt/scratch1/Touchstone_data/new_data/TOUCHSTONE_EAP_XRS_FFPE_PR_3_UOA_C_R1/cell_feature_matrix/"</span>,platform <span class="op">=</span> <span class="st">"Xenium"</span>,seu_obj <span class="op">=</span> <span class="va">result_seu</span><span class="op">)</span></span>
 <span><span class="va">getTxPerCell_seu</span></span>
 <span><span class="co">#&gt;   sample_id platform    value</span></span>
 <span><span class="co">#&gt; 1     test1   Xenium 63.88845</span></span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">getTxPerArea_test_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getTxPerArea.html">getTxPerArea</a></span><span class="op">(</span>platform <span class="op">=</span> <span class="st">"Xenium"</span>,seu_obj <span class="op">=</span> <span class="va">result_seu</span><span class="op">)</span></span>
 <span><span class="va">getTxPerArea_test_seu</span></span>
 <span><span class="co">#&gt;   sample_id platform     value</span></span>
 <span><span class="co">#&gt; 1     test1   Xenium 0.8983494</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">getNcells_test_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getNcells.html">getNcells</a></span><span class="op">(</span>expMat<span class="op">=</span><span class="va">expMat</span>,platform <span class="op">=</span> <span class="st">"Xenium"</span>,seu_obj <span class="op">=</span> <span class="va">result_seu</span><span class="op">)</span></span>
+<span><span class="va">getNcells_test_seu</span> </span>
+<span><span class="co">#&gt;   sample_id platform value</span></span>
+<span><span class="co">#&gt; 1     test1   Xenium 80939</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># getGlobalFDR_test_seu&lt;- getGlobalFDR(tx_file = "/mnt/scratch1/Touchstone_data/new_data/TOUCHSTONE_EAP_XRS_FFPE_PR_3_UOA_C_R1/transcripts.csv.gz",platform = "Xenium",seu_obj = result_seu)</span></span>
+<span><span class="co"># getGlobalFDR_test_seu</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="notes">Notes:<a class="anchor" aria-label="anchor" href="#notes"></a>
+</h3>
+<p>getGlobalFDR: Need to be modified as a dataframe
+(getGlobalFDR_test_seu for input as seurat object )</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">getTxPerCell_test_seu</span><span class="op">&lt;-</span> <span class="fu"><a href="../reference/getTxPerCell.html">getTxPerCell</a></span><span class="op">(</span>platform <span class="op">=</span> <span class="st">"Xenium"</span>,seu_obj <span class="op">=</span> <span class="va">result_seu</span><span class="op">)</span></span>
+<span><span class="va">getTxPerCell_test_seu</span></span>
+<span><span class="co">#&gt;   sample_id platform    value</span></span>
+<span><span class="co">#&gt; 1     test1   Xenium 63.88845</span></span></code></pre></div>
+</div>
 </div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
-    </nav>
-</div>
+      </div>
 
 </div>
 
@@ -1299,7 +1301,7 @@ plot functions.</p>
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by Felipe Dezem-Segato.</p>
+<p>Developed by Felipe Dezem-Segato, Yutian Liu.</p>
 </div>
 
 <div class="pkgdown">

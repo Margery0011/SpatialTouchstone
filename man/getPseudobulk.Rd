@@ -18,7 +18,7 @@ A matrix where each column represents a pseudobulk sample (averaged expression l
 Row names correspond to genes.
 }
 \description{
-Create pseudobulk expression matrices from single-cell RNA-seq data
+Creates pseudobulk gene expression matrices from single-cell RNA-seq data.
 }
 \details{
 This function generates pseudobulk expression matrices by averaging the expression levels of cells within the same cell type.

@@ -18,7 +18,7 @@ Defaults to "cell_type".}
 The input Seurat object (\code{seu_obj}) with an additional metadata column (\code{celltype_pred}) containing the cell type predictions.
 }
 \description{
-Automates the annotation of spatial transcriptomics data using reference single-cell RNA-seq data.
+Automates the annotation of spatial transcriptomics data using cell annotations from reference single-cell RNA-seq data.
 It filters cells based on transcript counts and employs a machine learning model for cell type prediction.
 }
 \details{

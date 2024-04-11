@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_update_all.R
 \name{getTxPerNuc}
 \alias{getTxPerNuc}
-\title{getTxPerNuc.}
+\title{getTxPerNuc}
 \usage{
 getTxPerNuc(seu_obj = NULL, features = NULL, tx_file = NULL, platform = NULL)
 }
@@ -25,7 +25,7 @@ the mean number of transcripts per nucleus across the specified features for the
 This provides a focused view of nuclear gene expression.
 }
 \description{
-It calculates ranscripts per nucleus.
+Calculates the number of transcripts per nucleus.
 }
 \details{
 This function calculates the mean number of transcripts localized within the nucleus

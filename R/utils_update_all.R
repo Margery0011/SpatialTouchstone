@@ -1,13 +1,13 @@
 
-globalVariables(c("target", "celltype_pred", "cell_type", "FDR", "nCount_RNA", "cell_area", "cell_ID", "Area.um2", "metric","platform","value","cell","cor","sample_id","value_ref","group","prop","squish","type"))
+globalVariables(c("target", "celltype_pred", "cell_type", "FDR", "nCount_RNA", "cell_area", "cell_ID", "Area.um2", "metric","platform","value","cell","cor","sample_id","value_ref","group","prop","squish","type","cell_id","overlaps_nucleus","feature_name"))
 
 #' @importFrom magrittr %>%
-NULL
+#' @description
 #' Compute various metrics for a given set of samples
-#' This function processes a data.frame containing sample information, including paths to necessary files, and computes a variety of metrics for each sample.
-#' The required metrics include the number of cells, specificity FDR, number of transcripts per cell, transcripts per area of segmented cell, transcripts per nucleus,
-#' signal to noise ratio, fraction of transcripts in segmented cells, Mutually Exclusive Co-Expression Rate (MECR), sparsity, and Shannon entropy.
-#' The data frame must include the columns: sample_id, platform, expMat, tx_file, and cell_meta.
+#' @details
+#' Computes various metrics for spatial transcriptomic data for a given set of samples. This function processes a data.frame containing sample information, including paths to necessary files, to compute a variety of metrics for each sample.
+#' The metrics outputted include the number of cells, specificity FDR, number of transcripts per cell, transcripts per area of segmented cell, transcripts per nucleus, signal to noise ratio, fraction of transcripts in segmented cells, Mutually Exclusive Co-Expression Rate (MECR), sparsity, and Shannon entropy.
+#' To initiate vignette, the data frame must include the columns: sample_id, platform, expMat, tx_file, and cell_meta.
 #' @title getAllMetrics
 #' @param df_samples A data.frame that must contain the following columns:
 #' \itemize{
@@ -138,9 +138,10 @@ getAllMetrics <- function(df_samples) {
 }
 
 
-#' @title readSpatial.
+#' @title readSpatial
 #' @description
-#' readSaptial reads in data from either Xenium, CosMx, of MERSCOPE and outputs a seurat object with some common metadata e for downstream comparison.
+#' Reads data from either imaging based spatial transcriptomic (CosMx, MERSCOPE, Xenium)
+#' and outputs a seurat object(seu_obj) with some common metadata for downstream comparison.
 #' @details
 #' Reads and preprocesses spatial transcriptomics data from a specified path for a given platform.
 #' The function supports 'Xenium' and 'CosMx' platforms, performing platform-specific loading and
@@ -303,10 +304,10 @@ readSpatial <- function(sample_id, path, platform=NULL, seurat=FALSE){
 }
 
 
-#' @title readTxMeta.
+#' @title readTxMeta
 #' @description
-#'  It reads in the transcript localization/metadata table.
-#'  For each platform, This table will be used by subsequent functions.
+#' Reads the transcript localization and metadata table.
+#' This table will be used by subsequent function in this package.
 #' @details
 #' #' This function reads transcriptome metadata from a specified path, depending on the platform specified.
 #' Currently supports 'Xenium' and 'CosMx' platforms. For 'Xenium', it reads 'transcripts.csv.gz' and renames
@@ -342,7 +343,7 @@ readTxMeta <- function(path, platform){
 
 #' @title getPseudobulk
 #' @description
-#'  Create pseudobulk expression matrices from single-cell RNA-seq data
+#' Creates pseudobulk gene expression matrices from single-cell RNA-seq data.
 #' @details
 #' This function generates pseudobulk expression matrices by averaging the expression levels of cells within the same cell type.
 #' It takes a Seurat object as input, along with a specification for the metadata column that defines cell types.
@@ -382,7 +383,7 @@ getPseudobulk <- function(seu_obj, celltype_meta="cell_type") {
 #'
 #' @return The input Seurat object (`seu_obj`) with an additional metadata column (`celltype_pred`) containing the cell type predictions.
 #' @description
-#' Automates the annotation of spatial transcriptomics data using reference single-cell RNA-seq data.
+#' Automates the annotation of spatial transcriptomics data using cell annotations from reference single-cell RNA-seq data.
 #' It filters cells based on transcript counts and employs a machine learning model for cell type prediction.
 #'
 #' @details
@@ -420,7 +421,8 @@ annotateData <- function(seu_obj, ref, celltype_meta="cell_type"){
 
 #' @title getNcells
 #' @description
-#' Calculates the number of cells present in a given dataset, supporting both Seurat object input and direct matrix file paths for platforms like Xenium and CosMx.
+#' Calculates the number of cells present in a given dataset, supporting both Seurat object input(seu_obj)
+#' and direct matrix file paths for imaging based spatial transcriptomic platforms such as Xenium and CosMx.
 #' @details
 #' The function `getNcells` offers flexibility in determining cell counts, catering to different types of input. For `Xenium` platform datasets, it expects the path to a 'matrix.mtx.gz'
 #' file within the specified `expMat` directory and calculates the number of cells by reading the column count of this sparse matrix. For `CosMx` datasets, it reads a CSV file specified by `expMat`,
@@ -432,6 +434,7 @@ annotateData <- function(seu_obj, ref, celltype_meta="cell_type"){
 #' @return An integer indicating the total number of cells in the dataset.
 #' @importFrom Matrix readMM
 #' @importFrom data.table fread
+#' @export
 
 getNcells <- function(seu_obj = NULL, expMat = 'path_to_expMat', platform = NULL) {
   if(is.null(seu_obj)) {
@@ -463,7 +466,7 @@ getNcells <- function(seu_obj = NULL, expMat = 'path_to_expMat', platform = NULL
 #' or blank barcode expressions compared to the expression of actual genes.
 #' @title getGlobalFDR
 #' @description
-#' Calculate Specificity as Global False Discovery Rate (FDR).
+#' Calculates specificity as Global False Discovery Rate (FDR).
 #' @param seu_obj A Seurat object containing spatial data, including a path and platform attribute.
 #' @param features An optional vector of feature names (gene names) for which to calculate the FDR.
 #'        If NULL (default), FDR is calculated for all features in the seu_obj.
@@ -471,13 +474,12 @@ getNcells <- function(seu_obj = NULL, expMat = 'path_to_expMat', platform = NULL
 #'        and 'Merscope'. Note: 'Merscope' is currently not supported.
 #' @param path Path to generate tx file.
 #' @param tx_file Path to transcription file.
-#' @param cellSegMeta Path to cellMeta.
 #' @export
 #' @importFrom data.table fread .N
 #' @importFrom Seurat CreateSeuratObject
 #' @return A data frame with columns for sample_id, platform, and the
 #' calculated mean FDR across the specified features.
-getGlobalFDR <- function(seu_obj = NULL, features = NULL, tx_file ='path_to_txFile', cellSegMeta = 'path_to_cellMeta', platform = NULL,path) {
+getGlobalFDR <- function(seu_obj = NULL, features = NULL, tx_file ='path_to_txFile', platform = NULL,path) {
 
   if(is.null(seu_obj)) {
     tx_df <- data.table::fread(tx_file)
@@ -534,84 +536,15 @@ getGlobalFDR <- function(seu_obj = NULL, features = NULL, tx_file ='path_to_txFi
 
 }
 
-#' @title getTxPerCell.
-#' @description Calculates the average number of transcripts per cell for the given features.
-#' @details
-#' This function calculates the mean number of transcripts per cell for a specified set of features (genes)
-#' in a Seurat object. If no features are specified, the function defaults to using all targets available
-#' within the RNA assay of the provided Seurat object. It's a useful metric for assessing the overall
-#' transcriptional activity within the sampled cells.
-#' @param seu_obj A Seurat object with RNA assays. The object must have 'sample_id' and 'platform' metadata attributes for identification
-#'        and reporting purposes.
-#' @param features An optional vector of feature names (e.g., gene symbols) to include in the calculation.
-#'        Defaults to NULL, in which case the calculation uses all available features in the RNA assay
-#'        of the Seurat object.
-#' @return A data frame with columns 'sample_id', 'platform', and 'value', where 'value' represents the
-#'         mean number of transcripts per cell calculated across the specified features. This output can
-#'         be useful for comparative analysis across samples or experimental conditions.
-#' @export
-#' @import Seurat
-getTxPerCell <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_exprMatrix',
-                         platform){
 
-  if(is.null(seu_obj)) {
-    if(platform == 'Xenium') {
-      exp <- Matrix::readMM(file.path(expMat, 'matrix.mtx.gz'))
-      cols <- data.table::fread(file.path(expMat, 'barcodes.tsv.gz'), header = F)
-      rows <- data.table::fread(file.path(expMat, 'features.tsv.gz'), header = F)
-      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
-      colnames(exp) <- cols$V1 ## this is the barcodes of cells
-    }
-
-    if(platform == 'CosMx') {
-      exp <- data.table::fread(file.path(expMat))
-      exp <- exp[, -c(1:2)]
-      exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
-
-    }
-
-    if(platform == 'Merscope') {
-
-    }
-
-    if(is.null(features)) {
-      features <- rownames(exp)
-      # remove non specific probes
-      features <- features[-grep('Unassigned*|NegControl*|BLANK*|SystemControl*', features)]
-    }
-
-    # Calculate average N of Txs per cell
-    mean_tx <- mean(colSums(exp[features, ]))
-
-    return(mean_tx)
-
-  }
-
-  if(!is.null(seu_obj)) {
-    if(is.null(features)){
-      features <- rownames(seu_obj)
-    } else{
-      features <- features
-    }
-
-    mean_tx <- mean(colSums(seu_obj[["RNA"]]$counts[features,]))
-    res <- data.frame(
-      sample_id = unique(seu_obj$sample_id),
-      platform = unique(seu_obj$platform),
-      value=mean_tx
-    )
-    return(res)
-  }
-
-}
 
 #' This function calculates the mean number of transcripts per unit area for specified features (genes) in a Seurat object.
 #' If no features are specified, the function defaults to using all targets within the RNA assay of the provided Seurat object.
 #' This calculation provides insight into the density of transcriptional activity relative to cell area, offering a normalized
 #' measure of gene expression that accounts for differences in cell size.
-#' @title getTxPerArea.
+#' @title getTxPerArea
 #' @description
-#' Calculate Mean Transcripts per Unit Area
+#' Calculates the Mean Transcripts per Unit Area.
 #' @param seu_obj A Seurat object.
 #'        The object must have 'sample_id' and 'platform' metadata for identification and reporting. It is expected that
 #'        `seu_obj$cell_area` contains the area information for each cell.
@@ -698,7 +631,7 @@ getTxPerArea <- function(seu_obj = NULL, features=NULL,
 
 }
 
-#' @title getTxPerCell.
+#' @title getTxPerCell
 #' @description Calculates the average number of transcripts per cell for the given features.
 #' @details
 #' This function calculates the mean number of transcripts per cell for a specified set of features (genes)
@@ -772,9 +705,9 @@ getTxPerCell <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_exprMa
 
 }
 
-#' @title getTxPerNuc.
+#' @title getTxPerNuc
 #' @description
-#' It calculates ranscripts per nucleus.
+#' Calculates the number of transcripts per nucleus.
 #' @details
 #' This function calculates the mean number of transcripts localized within the nucleus
 #' for a specified set of features (genes) across all cells in a given dataset. This measurement
@@ -979,9 +912,9 @@ getMeanExpression <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_e
 
 }
 ### log-ratio of mean gene counts to mean neg probe counts
-#' @title getMeanSignalRatio.
+#' @title getMeanSignalRatio
 #' @description
-#' It calculates log-ratio of mean gene counts to mean neg probe counts.
+#' Calcuates the log-ratio of mean gene expression counts to mean negative probe counts.
 #' @details
 #' Computes the log-ratio of the mean expression levels of specified genes (or all genes if none are specified)
 #' to the mean expression levels of negative control probes within a Seurat object. This metric can provide insights into
@@ -1018,9 +951,9 @@ getMeanSignalRatio <- function(seu_obj,
   return(res)
 }
 
-#' @title getCellTxFraction.
+#' @title getCellTxFraction
 #' @description
-#' It calculates fraction of transcripts in cells.
+#' Calculates fraction of transcripts in cells from spatial transcriptomic data.
 #' @details
 #' The function works by reading transcript metadata for the given sample and platform, then filtering for the specified features (if any).
 #' For each platform, it identifies transcripts that are not assigned to any cell ('UNASSIGNED' for Xenium, 'None' for CosMx, etc.) and calculates the fraction of transcripts that are assigned to cells.
@@ -1124,9 +1057,9 @@ getCellTxFraction <- function(seu_obj=NULL, features=NULL, tx_file = 'path_to_tx
 
 ##### Dynamic Range
 # Log-ratio of highest mean exp vs. mean noise
-#' @title getMaxRatio.
+#' @title getMaxRatio
 #' @description
-#' It calculateds the Log-ratio of highest mean exp vs. mean noise.
+#' Calculates the Log-ratio of highest mean expression vs. mean noise.
 #' @details
 #' The function identifies the maximum mean expression value among the specified features
 #' (or all features if none are specified) and calculates its log-ratio to the mean expression value
@@ -1197,9 +1130,9 @@ getMaxRatio <- function(seu_obj = NULL, features=NULL, expMat ='path_to_expMat',
   }
 }
 # Distribution of maximal values
-#' @title getMaxDetection.
+#' @title getMaxDetection
 #' @description
-#' It calculates the distribution of maximal values.
+#' Calculates the distribution of maximal values.
 #' @details This function identifies the maximal expression values across the specified set of features
 #' (or all features if none are specified) within the dataset, illustrating the upper bounds of gene
 #' expression. Such information is crucial for assessing the dataset's dynamic range and the sensitivity
@@ -1275,7 +1208,7 @@ getMaxDetection <- function(seu_obj = NULL, features=NULL, expMat ='path_to_expM
 ##### Mutually Exclusive Co-expression Rate (MECR) Implementation
 #' @title getMECR.
 #' @description
-#' It calculates  Mutually Exclusive Co-expression Rate (MECR) Implementation.
+#' Calculates Mutually Exclusive Co-expression Rate (MECR) which is a metric used for determining specificity.
 #' @details
 #' Based on a predefined set of markers and their associated cell types, this function computes the rate
 #' at which pairs of markers are expressed in mutually exclusive patterns within cells. The calculation is limited
@@ -1368,7 +1301,9 @@ getMECR <- function(seu_obj=NULL, expMat = 'path_to_expMat', platform = NULL) {
 
 ##### Distribution spatial autocorrelation
 
-#' @title getMorans.
+#' @title getMorans
+#' @description
+#' Calculates the Moran's I statistic for spatial autocorrelation of a dataset. Spatial autocorrelation is multi-directional and multi-dimensional, it has a value from -1 to 1.
 #' @param  seu_obj A seurat object.
 #' @param features A character vector specifying the features (genes or probes) to include in the analysis. If `NULL` (the default), all features in `seu_obj` are used.
 #' @return A data frame.
@@ -1462,9 +1397,9 @@ getMorans <- function(seu_obj,
 }
 
 ##### Cluster evaluation: silhouette width
-#' @title getSilhouetteWidth.
+#' @title getSilhouetteWidth
 #' @description
-#' It calculates silhouette width as cluster evaluation.
+#' Calculates the silhouette width which provides a metric for evaluating consistency within data clusters.
 #' @details The silhouette width calculation involves preprocessing steps including normalization and scaling of the data, PCA for dimensionality reduction, and clustering.
 #' The silhouette width is then calculated for a downsampled subset of cells to ensure computational efficiency.
 #' This metric helps in assessing the cohesion and separation of the identified clusters, with higher values indicating better defined clusters.
@@ -1506,9 +1441,9 @@ getSilhouetteWidth <- function(seu_obj){
 ##### Sparsity calculation #####
 #Show the sparsity (as a count or proportion) of a matrix.
 #For example, .99 sparsity means 99% of the values are zero. Similarly, a sparsity of 0 means the matrix is fully dense.
-#' @title  getSparsity.
+#' @title  getSparsity
 #' @description
-#' It shows the sparsity (as a count or proportion) of a matrix.
+#' Calculates the sparsity (as a count or proportion) of a gene expression count matrix.
 #' @details
 #' For example, .99 sparsity means 99% of the values are zero. Similarly, a sparsity of 0 means the matrix is fully dense.
 #' @param seu_obj A Seurat object.
@@ -1559,8 +1494,9 @@ getSparsity <- function(seu_obj=NULL, features = NULL, expMat = 'path_to_expMat'
 
 }
 
-#' @title getEntropy.
-#' @description Computes the entropy of the RNA count matrix within a Seurat object.
+#' @title getEntropy
+#' @description
+#' Calculates the entropy of the RNA count matrix within a Seurat object (seu_obj).
 #' @details
 #' Entropy is used to quantify the diversity or uniformity of gene expression across the dataset. This function calculates the entropy of the RNA count matrix, reflecting the distribution of gene expression levels.
 #' A higher entropy value suggests a more uniform distribution across genes, while a lower value indicates concentration in a smaller number of genes.
@@ -1616,8 +1552,8 @@ getEntropy <- function(seu_obj=NULL, features = NULL, expMat = 'path_to_expMat',
 ### ref
 #' @title getRCTD
 #' @description
-#' Performs cell type deconvolution on spatial transcriptomics data. This function requires a Seurat object with spatial transcriptomics data (`seu_obj`)
-#' and a reference Seurat object (`ref`). It filters out cells with fewer than 10 transcripts to improve accuracy and uses RCTD for cell type deconvolution.
+#' Performs cell type deconvolution on spatial transcriptomics data. It requires a Seurat object with spatial transcriptomics data (seu_obj) and a reference Seurat object (ref).
+#' It filters out cells with fewer than 10 transcripts to improve accuracy and uses the Robust Cell Type Deconvolution (RCTD) metric for cell type deconvolution.
 #' @details
 #' The function first prepares the reference data by extracting counts, cell type annotations, and UMI counts. The reference dataset is then used to construct
 #' a `Reference` object. For the query (spatial) data, cells with fewer than 10 transcript counts are filtered out, and tissue coordinates are prepared.
@@ -1676,8 +1612,8 @@ getRCTD <- function(seu_obj, ref){
 #' @title getMaxRCTD
 #' @description
 #' This function is designed to run Robust Cell Type Deconvolution (RCTD) on spatial transcriptomics data using a single-cell RNA-seq reference.
-#' It filters cells based on transcript counts, prepares the data, runs RCTD, and then calculates the maximum cell type weight for each spatial location,
-#' indicating the most prevalent cell type. The results include sample identifiers, platforms, and the corresponding maximum weight values, rounded to three decimal places.
+#' It filters cells based on transcript counts, prepares the data, runs RCTD.
+#' From the RCTD metric, it then calculates the maximum cell type weight for each spatial location, indicating the most prevalent cell type. The results include sample identifiers, platforms, and the corresponding maximum weight values, rounded to three decimal places.
 #' @details
 #' Initially, the function prepares the reference data from a Seurat object by extracting RNA counts, cell types, and UMI counts to create a reference object for RCTD.
 #' Spatial data is also preprocessed by filtering cells with low transcript counts and preparing coordinates. RCTD is then executed to deconvolve cell types.
@@ -1733,8 +1669,8 @@ getMaxRCTD <- function(seu_obj, ref){
 
 #' @title getCorrelationExp
 #' @description
-#' Identifies common genes between a spatial transcriptomics dataset (`seu_obj`) and a single-cell RNA-seq reference dataset (`ref`).
-#' It computes the mean expression levels of these genes in both datasets and includes the mean signal of control probes from `seu_obj`.
+#' Identifies common genes between a spatial transcriptomics dataset (seu_obj) and a single-cell RNA-seq reference dataset (ref).
+#' It computes the mean expression levels of these genes in both datasets while including the mean signal of control probes from seu_obj.
 #' This function is useful for preparing data for correlation analyses or visual comparison between datasets.
 #' @details
 #' The function begins by identifying genes present in both the spatial transcriptomics dataset and the single-cell reference.
@@ -1760,8 +1696,8 @@ getCorrelationExp <- function(seu_obj, ref){
 
 #' @title getCorrelation
 #' @description
-#' Identifies common genes between a spatial transcriptomics dataset (`seu_obj`) and a single-cell RNA-seq reference dataset (`ref`).
-#' It then computes the Spearman correlation coefficient based on the mean expression levels of these genes across the datasets.
+#' Identifies common genes between a spatial transcriptomics dataset (seu_obj) and a single-cell RNA-seq reference dataset (ref).
+#' From this objec  the Spearman correlation coefficient is computed based on the mean expression levels of these genes across the datasets.
 #' The result is a single correlation coefficient value that quantifies the similarity between the two datasets at the expression level of shared genes.
 #' @details
 #' This function is particularly useful for assessing the overall concordance between spatial transcriptomics data and a reference single-cell RNA-seq dataset.
@@ -1787,8 +1723,9 @@ getCorrelation <- function(seu_obj, ref){
 
 #' @title getCellTypeCor
 #' @description
-#' This function subsets both the spatial transcriptomics dataset (`seu_obj`) and the single-cell RNA-seq reference (`ref`) into cell type-specific groups.
-#' It then computes the Spearman correlation coefficient for each cell type, providing a cell type-specific similarity metric between the datasets.
+#' This function subsets both the spatial transcriptomics dataset (seu_obj) and the single-cell RNA-seq reference (ref) into cell type-specific groups.
+#' From these cell-type specific group,
+#' it computes the Spearman correlation coefficient for each cell type, providing a cell type-specific similarity metric between the datasets.
 #' @details
 #' Useful for detailed analysis of cell type-specific expression patterns, this function helps in understanding the concordance between spatial transcriptomics
 #' data and single-cell RNA-seq references at the level of individual cell types. It requires that `seu_obj` includes cell type predictions and that `ref` contains
@@ -1816,9 +1753,9 @@ getCellTypeCor <- function(seu_obj, ref){
 
 #' @title getClusterMetrics
 #' @description
-#' This function applies clustering analysis to a Seurat object (`seu_obj`) and calculates the Adjusted Rand Index (ARI)
-#' and Normalized Mutual Information (NMI) between the resulting clusters and a specified cell type prediction. These metrics
-#' are used to assess the quality of clustering and the agreement between predicted cell types and clustering outcomes.
+#' Applies the clustering analysis to a Seurat object (seu_obj) to calculate the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI)
+#' between the resulting clusters and a specified cell type prediction.
+#' ARI and NMI are metrics used to assess the quality of clustering and the agreement between predicted cell types and clustering outcomes.
 #' @details
 #' Clustering is performed on the `seu_obj` data, which is first normalized and scaled. PCA is then run, followed by neighbor finding
 #' and cluster identification. The ARI and NMI are calculated to evaluate the clustering quality, with ARI measuring the similarity
@@ -2179,7 +2116,8 @@ plotMaxExpression <- function(df){
 }
 
 #' @title plotMECR
-#' @description Visualizes the MECR values across samples with a scatter plot.
+#' @description
+#' Visualizes the Mutually Exclusive Co-expression Rate (MECR) values across samples with a scatter plot.
 #' @param df Data frame with `sample_id` and `value` columns for MECR values.
 #' @return A ggplot object showing MECR values for each sample.
 #' @export
@@ -2354,7 +2292,8 @@ plotCellTypeProportion <- function(df){
 }
 
 #' @title plotARI
-#' @description Generates a scatter plot visualizing ARI values across samples to assess clustering performance.
+#' @description
+#' Generates a scatter plot visualizing Adjusted Rand Index (ARI) values across samples to assess clustering performance.
 #' @param cluster_metrics Data frame with `sample_id`, `value`, and `metric` columns, filtered for "ARI".
 #' @return A ggplot object depicting ARI values for each sample.
 #' @export
@@ -2387,7 +2326,8 @@ plotARI <- function(cluster_metrics){
 }
 
 #' @title plotNMI
-#' @description Creates a scatter plot to visualize NMI values across samples, indicating the quality of clustering.
+#' @description
+#' Creates a scatter plot to visualize Normalized Mutual Information (NMI) values across samples, indicating the quality of clustering.
 #' @param cluster_metrics Data frame with `sample_id`, `value`, and `metric` columns, filtered for "NMI".
 #' @return A ggplot object showing NMI values for each sample.
 #' @export
@@ -2449,8 +2389,9 @@ plotRCTD <- function(df){
   return(p)
 }
 #' @import ggplot2
-## This function take a list with the results from the function getMetrics to plot the metrics gathered
-#' @title plotMetrics.
+#' @description
+#' Generates plots from technical metrics in spatial touchstone.
+#' @title plotMetrics
 #' @param metrics_list A list containing the metrics results.
 #' @param PlotAutocorr Logical; if `TRUE`, plots the autocorrelation metric. Default is `TRUE`.
 #' @param PlotSparsity Logical; if `TRUE`, plots the sparsity metric;Default is `TRUE`.

@@ -2,15 +2,8 @@
 % Please edit documentation in R/utils_update_all.R
 \name{getTxPerCell}
 \alias{getTxPerCell}
-\title{getTxPerCell.}
+\title{getTxPerCell}
 \usage{
-getTxPerCell(
-  seu_obj = NULL,
-  features = NULL,
-  expMat = "path_to_exprMatrix",
-  platform
-)
-
 getTxPerCell(
   seu_obj = NULL,
   features = NULL,
@@ -35,22 +28,11 @@ and 'Merscope'. Note: 'Merscope' is currently not supported.}
 A data frame with columns 'sample_id', 'platform', and 'value', where 'value' represents the
 mean number of transcripts per cell calculated across the specified features. This output can
 be useful for comparative analysis across samples or experimental conditions.
-
-A data frame with columns 'sample_id', 'platform', and 'value', where 'value' represents the
-mean number of transcripts per cell calculated across the specified features. This output can
-be useful for comparative analysis across samples or experimental conditions.
 }
 \description{
 Calculates the average number of transcripts per cell for the given features.
-
-Calculates the average number of transcripts per cell for the given features.
 }
 \details{
-This function calculates the mean number of transcripts per cell for a specified set of features (genes)
-in a Seurat object. If no features are specified, the function defaults to using all targets available
-within the RNA assay of the provided Seurat object. It's a useful metric for assessing the overall
-transcriptional activity within the sampled cells.
-
 This function calculates the mean number of transcripts per cell for a specified set of features (genes)
 in a Seurat object. If no features are specified, the function defaults to using all targets available
 within the RNA assay of the provided Seurat object. It's a useful metric for assessing the overall

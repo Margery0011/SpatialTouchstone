@@ -15,8 +15,8 @@ getCorrelation(seu_obj, ref)
 A data frame with columns for \code{sample_id}, \code{platform}, and the Spearman correlation coefficient \code{value}.
 }
 \description{
-Identifies common genes between a spatial transcriptomics dataset (\code{seu_obj}) and a single-cell RNA-seq reference dataset (\code{ref}).
-It then computes the Spearman correlation coefficient based on the mean expression levels of these genes across the datasets.
+Identifies common genes between a spatial transcriptomics dataset (seu_obj) and a single-cell RNA-seq reference dataset (ref).
+From this objec  the Spearman correlation coefficient is computed based on the mean expression levels of these genes across the datasets.
 The result is a single correlation coefficient value that quantifies the similarity between the two datasets at the expression level of shared genes.
 }
 \details{

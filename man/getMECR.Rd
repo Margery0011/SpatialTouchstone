@@ -20,7 +20,7 @@ MECR value. The MECR value is rounded to three decimal places and represents
 the average mutually exclusive co-expression rate across the selected markers.
 }
 \description{
-It calculates  Mutually Exclusive Co-expression Rate (MECR) Implementation.
+Calculates Mutually Exclusive Co-expression Rate (MECR) which is a metric used for determining specificity.
 }
 \details{
 Based on a predefined set of markers and their associated cell types, this function computes the rate

@@ -13,5 +13,5 @@ plotARI(cluster_metrics)
 A ggplot object depicting ARI values for each sample.
 }
 \description{
-Generates a scatter plot visualizing ARI values across samples to assess clustering performance.
+Generates a scatter plot visualizing Adjusted Rand Index (ARI) values across samples to assess clustering performance.
 }

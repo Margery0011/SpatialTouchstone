@@ -13,8 +13,8 @@ getMaxRCTD(seu_obj, ref)
 }
 \description{
 This function is designed to run Robust Cell Type Deconvolution (RCTD) on spatial transcriptomics data using a single-cell RNA-seq reference.
-It filters cells based on transcript counts, prepares the data, runs RCTD, and then calculates the maximum cell type weight for each spatial location,
-indicating the most prevalent cell type. The results include sample identifiers, platforms, and the corresponding maximum weight values, rounded to three decimal places.
+It filters cells based on transcript counts, prepares the data, runs RCTD.
+From the RCTD metric, it then calculates the maximum cell type weight for each spatial location, indicating the most prevalent cell type. The results include sample identifiers, platforms, and the corresponding maximum weight values, rounded to three decimal places.
 }
 \details{
 Initially, the function prepares the reference data from a Seurat object by extracting RNA counts, cell types, and UMI counts to create a reference object for RCTD.

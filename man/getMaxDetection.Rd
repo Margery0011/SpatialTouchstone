@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_update_all.R
 \name{getMaxDetection}
 \alias{getMaxDetection}
-\title{getMaxDetection.}
+\title{getMaxDetection}
 \usage{
 getMaxDetection(
   seu_obj = NULL,
@@ -30,7 +30,7 @@ sample.
 A data frame.
 }
 \description{
-It calculates the distribution of maximal values.
+Calculates the distribution of maximal values.
 }
 \details{
 This function identifies the maximal expression values across the specified set of features

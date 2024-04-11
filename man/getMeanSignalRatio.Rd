@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_update_all.R
 \name{getMeanSignalRatio}
 \alias{getMeanSignalRatio}
-\title{getMeanSignalRatio.}
+\title{getMeanSignalRatio}
 \usage{
 getMeanSignalRatio(seu_obj, features = NULL)
 }
@@ -19,7 +19,7 @@ mean log-ratio of gene expression to negative control probe expression for the s
 used to assess the signal-to-noise ratio in the dataset.
 }
 \description{
-It calculates log-ratio of mean gene counts to mean neg probe counts.
+Calcuates the log-ratio of mean gene expression counts to mean negative probe counts.
 }
 \details{
 Computes the log-ratio of the mean expression levels of specified genes (or all genes if none are specified)

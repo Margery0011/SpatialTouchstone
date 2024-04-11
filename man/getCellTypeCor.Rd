@@ -15,8 +15,9 @@ getCellTypeCor(seu_obj, ref)
 A data frame with \code{cell_type} and the corresponding Spearman correlation coefficient for each cell type between \code{seu_obj} and
 }
 \description{
-This function subsets both the spatial transcriptomics dataset (\code{seu_obj}) and the single-cell RNA-seq reference (\code{ref}) into cell type-specific groups.
-It then computes the Spearman correlation coefficient for each cell type, providing a cell type-specific similarity metric between the datasets.
+This function subsets both the spatial transcriptomics dataset (seu_obj) and the single-cell RNA-seq reference (ref) into cell type-specific groups.
+From these cell-type specific group,
+it computes the Spearman correlation coefficient for each cell type, providing a cell type-specific similarity metric between the datasets.
 }
 \details{
 Useful for detailed analysis of cell type-specific expression patterns, this function helps in understanding the concordance between spatial transcriptomics
