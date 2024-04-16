@@ -5,14 +5,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Introduction to SpatialTouchstone • SpatiaTouchstone</title>
+<title>Introduction to SpatialTouchstone • SpatialTouchstone</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Introduction to SpatialTouchstone">
-<meta property="og:description" content="SpatiaTouchstone">
+<meta property="og:description" content="SpatialTouchstone">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -32,16 +32,13 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">SpatiaTouchstone</a>
+        <a class="navbar-link" href="../index.html">SpatialTouchstone</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="../articles/SpatiaTouchstone.html">Get started</a>
-</li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
@@ -53,6 +50,9 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/SpatiaTouchstone.html">SpatiaTouchstone</a>
+    </li>
+    <li>
       <a href="../articles/SpatialTouchstone-tutorial.html">Introduction to SpatialTouchstone</a>
     </li>
   </ul>
@@ -101,7 +101,7 @@
 <code class="sourceCode R"><span><span class="co"># Do not return a seurat object </span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readSpatial.html">readSpatial</a></span><span class="op">(</span>sample_id <span class="op">=</span> <span class="st">"test1"</span>,path<span class="op">=</span><span class="st">"/mnt/scratch1/Touchstone_data/new_data/TOUCHSTONE_EAP_XRS_FFPE_PR_3_UOA_C_R1/"</span>,platform <span class="op">=</span> <span class="st">"Xenium"</span>,seurat <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Reading: test1"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">result</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $test1</span></span>
 <span><span class="co">#&gt; $test1$expMatrix</span></span>
 <span><span class="co">#&gt; 541 x 80939 sparse Matrix of class "dgTMatrix"</span></span>
@@ -1233,7 +1233,14 @@
 <span><span class="co">#&gt; 9243886:             73</span></span>
 <span><span class="co">#&gt; 9243887:            321</span></span>
 <span><span class="co">#&gt; 9243888:            306</span></span>
-<span><span class="co">#&gt; 9243889:            170</span></span></code></pre></div>
+<span><span class="co">#&gt; 9243889:            170</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $&lt;NA&gt;</span></span>
+<span><span class="co">#&gt; NULL</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $&lt;NA&gt;</span></span>
+<span><span class="co">#&gt; NULL</span></span></code></pre></div>
 <p>It can return a <code>Seurat</code> Object by seting the
 <code>seurat=TRUE</code>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -1288,6 +1295,17 @@ plot functions.</p>
 <span><span class="co">#&gt;   sample_id platform    value</span></span>
 <span><span class="co">#&gt; 1     test1   Xenium 63.88845</span></span></code></pre></div>
 </div>
+</div>
+<div class="section level2">
+<h2 id="to-gerante-a-qc-report">To gerante a QC report<a class="anchor" aria-label="anchor" href="#to-gerante-a-qc-report"></a>
+</h2>
+<p>It will automatically generate a pdf qc report</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co"># genereateQCreport_table_1&lt;- genereateQCreport_table(seu_obj = result_seu)</span></span>
+<span><span class="co"># genereateQCreport_table_1</span></span>
+<span><span class="co">#   sample_id platform ncell entropy_value sparsity_value tx_perarea tx_percell cell_tx_fraction mean_ratio max_ratio</span></span>
+<span><span class="co"># 1     test1   Xenium 80939         0.497          0.936  0.8983494   63.88845        0.7115717   2.306417  4.290015</span></span></code></pre></div>
 </div>
   </div>
 

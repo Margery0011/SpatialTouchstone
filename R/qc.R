@@ -35,12 +35,6 @@ library(ggplot2)
 #' @export
 genereateQCreport_table <-
   function(seu_obj, features = NULL, pdfFile = "QCReportTable.pdf") {
-    # function body as you provided
-  }
-
-
-genereateQCreport_table <-
-  function(seu_obj, features = NULL, pdfFile = "QCReportTable.pdf") {
     if (!inherits(seu_obj, "Seurat")) {
       stop("Input must be a Seurat object.")
     }
@@ -144,4 +138,4 @@ genereateQCreport_table <-
   }
 
 
-genereateQCreport_table(seu_obj)
+
