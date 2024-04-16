@@ -826,7 +826,7 @@ getTxPerNuc <- function(seu_obj=NULL, features=NULL, tx_file = NULL, platform = 
 }
 
 
-#' @title getMeanExpression.
+#' @title getMeanExpression
 #' @description
 #' It calculated mean expression per probe.
 #' @details
@@ -1206,7 +1206,7 @@ getMaxDetection <- function(seu_obj = NULL, features=NULL, expMat ='path_to_expM
 }
 
 ##### Mutually Exclusive Co-expression Rate (MECR) Implementation
-#' @title getMECR.
+#' @title getMECR
 #' @description
 #' Calculates Mutually Exclusive Co-expression Rate (MECR) which is a metric used for determining specificity.
 #' @details

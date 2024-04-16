@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_update_all.R
 \name{getMeanExpression}
 \alias{getMeanExpression}
-\title{getMeanExpression.}
+\title{getMeanExpression}
 \usage{
 getMeanExpression(
   seu_obj = NULL,

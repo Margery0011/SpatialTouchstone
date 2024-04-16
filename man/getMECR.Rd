@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_update_all.R
 \name{getMECR}
 \alias{getMECR}
-\title{getMECR.}
+\title{getMECR}
 \usage{
 getMECR(seu_obj = NULL, expMat = "path_to_expMat", platform = NULL)
 }

@@ -1,4 +1,4 @@
-Package: SpatiaTouchstone
+Package: SpatialTouchstone
 Title: MultiQC for spatialdata across platform
 Version: 0.0.0.9000
 Authors@R: 
