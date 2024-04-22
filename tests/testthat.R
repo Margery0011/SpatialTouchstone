@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(SpatiaTouchstone)
+library(SpatialTouchstone)
 
-test_check("SpatiaTouchstone")
+test_check("SpatialTouchstone")

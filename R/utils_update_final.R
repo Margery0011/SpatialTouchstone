@@ -1,4 +1,32 @@
 
+### Loading Packages
+
+# Loading packages
+packages <- c("Seurat", "dplyr", "ggplot2", "shadowtext", "scales", "cowplot", "data.table", "Matrix", "matrixStats", "SingleCellExperiment", "SpatialExperiment", "SpatialFeatureExperiment", "bluster", "BiocParallel", "BioQC", "coop", "fs")
+
+# Check and install packages
+for (pkg in packages) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    # Install the package from CRAN
+    install.packages(pkg)
+
+    # Check if it's a Bioconductor package
+    if (pkg %in% c("SingleCellExperiment", "SpatialExperiment", "SpatialFeatureExperiment", "bluster", "BiocParallel", "BioQC")) {
+      # Install the Bioconductor package
+      if (!requireNamespace("BiocManager", quietly = TRUE)) {
+        install.packages("BiocManager")
+      }
+      BiocManager::install(pkg)
+    }
+
+    # Load the package
+    library(pkg, character.only = TRUE)
+  } else {
+    # Load the package
+    library(pkg, character.only = TRUE)
+  }
+}
+
 globalVariables(c("target", "celltype_pred", "cell_type", "FDR", "nCount_RNA", "cell_area", "cell_ID", "Area.um2", "metric","platform","value","cell","cor","sample_id","value_ref","group","prop","squish","type","cell_id","overlaps_nucleus","feature_name"))
 
 #' @importFrom magrittr %>%
@@ -19,7 +47,9 @@ globalVariables(c("target", "celltype_pred", "cell_type", "FDR", "nCount_RNA", "
 #' }
 #' @return A modified version of df_samples with the computed metrics added as new columns.
 #' @export
-getAllMetrics <- function(df_samples) {
+getAllMetrics <- function(df_samples, features = NULL) {
+  # Ordering columns to match to mapply()
+  df_samples <- df_samples[, c('dataset','platform', 'expMat', 'tx_file', 'cellSegMeta')]
 
   gStartTime <- Sys.time()
 
@@ -27,7 +57,7 @@ getAllMetrics <- function(df_samples) {
     start.time <- Sys.time()
     print("Calculating number of cells ")
     df_samples$nCells <- NA
-    df_samples$nCells <- mapply(getNcells, expMat = df_samples$expMat, platform = df_samples$platform)
+    df_samples$nCells <- mapply(getNcells, expMat = df_samples[, 3], platform = df_samples[, 2])
     end.time <- Sys.time()
     print(end.time - start.time)
   }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
@@ -38,7 +68,9 @@ getAllMetrics <- function(df_samples) {
     start.time <- Sys.time()
     print("Calculating Specificity ")
     df_samples$specificityFDR <- NA
-    df_samples$specificityFDR <- mapply(getGlobalFDR, tx_file = df_samples$tx_file, platform = df_samples$platform, cellSegMeta =  df_samples$cell_meta)
+    df_samples$specificityFDR <- mapply(getGlobalFDR, tx_file = df_samples[, 4],
+                                        platform = df_samples[, 2], cellSegMeta =  df_samples[, 5],
+                                        MoreArgs = list(features = features))
     end.time <- Sys.time()
     print(end.time - start.time)
   }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
@@ -49,7 +81,8 @@ getAllMetrics <- function(df_samples) {
     start.time <- Sys.time()
     print("Calculating number of transcripts per cell ")
     df_samples$TxPerCell <- NA
-    df_samples$TxPerCell <- mapply(getTxPerCell, expMat = df_samples$expMat, platform = df_samples$platform)
+    df_samples$TxPerCell <- mapply(getTxPerCell, expMat = df_samples[, 3] , platform = df_samples[, 2],
+                                   MoreArgs = list(features = features))
     end.time <- Sys.time()
     print(end.time - start.time)
   }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
@@ -60,7 +93,8 @@ getAllMetrics <- function(df_samples) {
     start.time <- Sys.time()
     print("Calculating number transcripts per area of segmented cell ")
     df_samples$TxPerArea <- NA
-    df_samples$TxPerArea <- mapply(getTxPerArea, platform = df_samples$platform, cellSegMeta =  df_samples$cell_meta)
+    df_samples$TxPerArea <- mapply(getTxPerArea, platform = df_samples[, 2] ,
+                                   cellSegMeta =  df_samples[, 5], MoreArgs = list(features = features) )
     end.time <- Sys.time()
     print(end.time - start.time)
   }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
@@ -70,7 +104,8 @@ getAllMetrics <- function(df_samples) {
     start.time <- Sys.time()
     print("Calculating number transcripts per nuclei ")
     df_samples$TxPerNuc <- NA
-    df_samples$TxPerNuc <- mapply(getTxPerNuc, tx_file = df_samples$tx_file, platform = df_samples$platform)
+    df_samples$TxPerNuc <- mapply(getTxPerNuc, tx_file = df_samples[, 4] , platform = df_samples[, 2],
+                                  MoreArgs = list(features = features))
     end.time <- Sys.time()
     print(end.time - start.time)
   }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
@@ -81,7 +116,7 @@ getAllMetrics <- function(df_samples) {
     start.time <- Sys.time()
     print("Calculating signal to noise ratio ")
     df_samples$SigNoiseRatio <- NA
-    df_samples$SigNoiseRatio <- mapply(getMeanSignalRatio, expMat = df_samples$expMat, platform = df_samples$platform)
+    df_samples$SigNoiseRatio <- mapply(getMeanSignalRatio, expMat = df_samples[, 3] , platform = df_samples[, 2] )
     end.time <- Sys.time()
     print(end.time - start.time)
   }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
@@ -92,19 +127,29 @@ getAllMetrics <- function(df_samples) {
     start.time <- Sys.time()
     print("Calculating fraction of transcripts in segmented cells ")
     df_samples$CellTxFraction <- NA
-    df_samples$CellTxFraction <- mapply(getCellTxFraction, tx_file = df_samples$tx_file, platform = df_samples$platform)
+    df_samples$CellTxFraction <- mapply(getCellTxFraction, tx_file = df_samples[, 4] ,
+                                        platform = df_samples[, 2], MoreArgs = list(features = features) )
     end.time <- Sys.time()
     print(end.time - start.time)
   }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
 
-
+  #Dynamic range
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating dynamic range ")
+    df_samples$DynamicRange <- NA
+    df_samples$DynamicRange <- mapply(getMaxRatio, expMat = df_samples[, 3] ,
+                                      platform = df_samples[, 2], MoreArgs = list(features = features) )
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
 
   # MECR
   tryCatch({
     start.time <- Sys.time()
     print("Calculating MECR (Mutually Exclusive Co-Expression Rate) ")
     df_samples$MECR <- NA
-    df_samples$MECR <- mapply(getMECR, expMat = df_samples$expMat, platform = df_samples$platform)
+    df_samples$MECR <- mapply(getMECR, expMat = df_samples[, 3] , platform = df_samples[, 2])
     end.time <- Sys.time()
     print(end.time - start.time)
   }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
@@ -114,7 +159,8 @@ getAllMetrics <- function(df_samples) {
     start.time <- Sys.time()
     print("Calculating sparsity ")
     df_samples$sparsity <- NA
-    df_samples$sparsity <- mapply(getSparsity, expMat = df_samples$expMat, platform = df_samples$platform)
+    df_samples$sparsity <- mapply(getSparsity, expMat = df_samples[, 3] , platform = df_samples[, 2],
+                                  MoreArgs = list(features = features))
     end.time <- Sys.time()
     print(end.time - start.time)
   }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
@@ -125,12 +171,75 @@ getAllMetrics <- function(df_samples) {
     start.time <- Sys.time()
     print("Calculating Shannon entropy ")
     df_samples$entropy <- NA
-    df_samples$entropy <- mapply(getEntropy, expMat = df_samples$expMat, platform = df_samples$platform)
+    df_samples$entropy <- mapply(getEntropy, expMat = df_samples[, 3] , platform = df_samples[, 2],
+                                 MoreArgs = list(features = features))
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
+
+  # Complexity
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating complexity ")
+    df_samples$Complexity <- NA
+    df_samples$Complexity <- mapply(getComplexity, expMat = df_samples[, 3] , platform = df_samples[, 2],
+                                    MoreArgs = list(features = features))
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
+
+  # GlobalFDR
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating Global FDR ")
+    df_samples$GlobalFDR <- NA
+    df_samples$GlobalFDR <- mapply(getGlobalFDR, tx_file = df_samples[, 4] , platform = df_samples[, 2])
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
+
+  # MeanExpression
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating Mean Expression ")
+    df_samples$MeanExpression <- NA
+    df_samples$MeanExpression <- mapply(getMeanExpression,  expMat = df_samples[, 3] , platform = df_samples[, 2])
     end.time <- Sys.time()
     print(end.time - start.time)
   }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
 
 
+  # MaxDetection
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating Max Expression ")
+    df_samples$MaxExpression <- NA
+    df_samples$MaxExpression <- mapply(getMaxDetection,  expMat = df_samples[, 3] , platform = df_samples[, 2])
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
+
+
+  # Sparsity
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating Sparsity ")
+    df_samples$Sparsity <- NA
+    df_samples$Sparsity <- mapply(getSparsity,  expMat = df_samples[, 3] , platform = df_samples[, 2])
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
+
+
+  # PanelSize
+  tryCatch({
+    start.time <- Sys.time()
+    print("Calculating Panel Size ")
+    df_samples$PanelSize <- NA
+    df_samples$PanelSize <- mapply(getSparsity,  expMat = df_samples[, 3] , platform = df_samples[, 2])
+    end.time <- Sys.time()
+    print(end.time - start.time)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "")})
   gEndTime <- Sys.time()
   print(paste0("total time: ", round(gEndTime - gStartTime , digits = 2) ))
   return(df_samples)
@@ -161,6 +270,7 @@ getAllMetrics <- function(df_samples) {
 #' @importFrom Seurat CreateSeuratObject
 #' @importFrom data.table fread
 #' @export
+
 readSpatial <- function(sample_id, path, platform=NULL, seurat=FALSE){
   print(paste0("Reading: ", sample_id))
 
@@ -303,7 +413,6 @@ readSpatial <- function(sample_id, path, platform=NULL, seurat=FALSE){
   return(seu_obj)
 }
 
-
 #' @title readTxMeta
 #' @description
 #' Reads the transcript localization and metadata table.
@@ -421,7 +530,7 @@ annotateData <- function(seu_obj, ref, celltype_meta="cell_type"){
 
 #' @title getNcells
 #' @description
-#' Calculates the number of cells present in a given dataset, supporting both Seurat object input(seu_obj)
+#' Calculate the number of cells present in a given dataset, supporting both Seurat object input(seu_obj)
 #' and direct matrix file paths for imaging based spatial transcriptomic platforms such as Xenium and CosMx.
 #' @details
 #' The function `getNcells` offers flexibility in determining cell counts, catering to different types of input. For `Xenium` platform datasets, it expects the path to a 'matrix.mtx.gz'
@@ -436,28 +545,55 @@ annotateData <- function(seu_obj, ref, celltype_meta="cell_type"){
 #' @importFrom data.table fread
 #' @export
 
+
 getNcells <- function(seu_obj = NULL, expMat = 'path_to_expMat', platform = NULL) {
   if(is.null(seu_obj)) {
     if(platform == 'Xenium') {
-      ncell <- ncol(Matrix::readMM(file.path(expMat, 'matrix.mtx.gz')))
+
+      expMat_checker <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+      n <- length(expMat_checker)
+      h5_file_path <- expMat_checker[1]
+      for (i in 2:n) {
+        one_string_only <- paste0(h5_file_path, expMat_checker[i], sep="")
+      }
+
+      if(grepl('.h5', one_string_only) == FALSE) {
+        mtx_bar_feat_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_bar_feat_path[grepl('matrix.mtx.gz', mtx_bar_feat_path)]
+        ncell <- ncol(Matrix::readMM(file.path(mtx_path)))
+      } else {
+        mtx_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_path[grepl('.h5', mtx_path)]
+        exp <- Read10X_h5(filename = file.path(mtx_path), use.names = TRUE, unique.features = TRUE)
+        exp <- do.call(rbind, exp) #bind all the lists
+        ncell <- ncol(exp)
+
+      }
+      res <- ncell
     }
     if(platform == 'CosMx') {
       ncell <- nrow(data.table::fread(expMat))
     }
+
+    res <- ncell
+
   }
+
 
   if(!is.null(seu_obj)) {
     ncell <- ncol(seu_obj)
+    res <- data.frame(
+      sample_id = unique(seu_obj$sample_id),
+      platform = unique(seu_obj$platform),
+      value=ncell
+    )
   }
 
-  res <- data.frame(
-    sample_id = unique(seu_obj$sample_id),
-    platform = unique(seu_obj$platform),
-    value=ncell
-  )
+
   return(res)
 
 }
+
 
 
 #' @details
@@ -466,7 +602,7 @@ getNcells <- function(seu_obj = NULL, expMat = 'path_to_expMat', platform = NULL
 #' or blank barcode expressions compared to the expression of actual genes.
 #' @title getGlobalFDR
 #' @description
-#' Calculates specificity as Global False Discovery Rate (FDR).
+#' Calculate specificity as Global False Discovery Rate (FDR).
 #' @param seu_obj A Seurat object containing spatial data, including a path and platform attribute.
 #' @param features An optional vector of feature names (gene names) for which to calculate the FDR.
 #'        If NULL (default), FDR is calculated for all features in the seu_obj.
@@ -479,63 +615,61 @@ getNcells <- function(seu_obj = NULL, expMat = 'path_to_expMat', platform = NULL
 #' @importFrom Seurat CreateSeuratObject
 #' @return A data frame with columns for sample_id, platform, and the
 #' calculated mean FDR across the specified features.
-getGlobalFDR <- function(seu_obj = NULL, features = NULL, tx_file ='path_to_txFile', platform = NULL,path) {
+getGlobalFDR <- function(seu_obj = NULL, features = NULL, tx_file ='path_to_txFile', cellSegMeta = 'path_to_cellMeta', platform = NULL, path) {
+  # Initialize variable
+  tx_df <- NULL
 
+  # Load data based on the presence of the Seurat object
   if(is.null(seu_obj)) {
     tx_df <- data.table::fread(tx_file)
 
     if(platform == 'Xenium') {
-      setnames(tx_df, "feature_name", "target") ## changing the colname to target to keep it consistent for all techs
+      setnames(tx_df, "feature_name", "target")  # changing the colname to target to keep it consistent for all techs
     }
-
-    if(platform == 'CosMx') {
-      tx_df <- data.table::fread(tx_file)
-
-    }
-
-    if(platform == 'Merscope') {
-
-    }
-  }
-
-
-  if(!is.null(seu_obj)) {
-    ## Obj seurat should have a column in @meta.data with path to Tx file
+  } else {
+    # If Seurat object is provided, extract the necessary information from it
     path <- unique(seu_obj$path)
-    # same for Platform
     platform <- unique(seu_obj$platform)
+    sample_id <- unique(seu_obj$sample_id)
 
     # Read Tx localization data
     tx_df <- readTxMeta(path, platform)
   }
 
-
-  ## Get probes that are Negative control or 'blank' barcodes ##
+  # Filter and process data
   negProbes <- tx_df$target[grep('Neg*|SystemControl*|Blank*|BLANK*', tx_df$target)]
-  allGenes <- unique(tx_df[!target %in% negProbes, target]) ## list of unique genes (non control or blank probes) in panel
+  allGenes <- unique(tx_df[!target %in% negProbes, target])  # list of unique genes (non control or blank probes) in panel
 
-  # create table with expression per each gene in panel (adding N of Txs for each gene in object allGenes) - p.s This will take the expression of Txs outside of assigned cells
-  expTableAll  <- tx_df[, .(Count = .N), by = target]
+  # Create table with expression per each gene in panel
+  expTableAll <- tx_df[, .(Count = .N), by = target]
   expTable <- expTableAll[expTableAll$target %in% allGenes, ]
-  expNeg <- sum(expTableAll[!expTableAll$target %in% allGenes, ]$Count) ## sum of all Negative control or blank or unassigned barcodes (i.e non specific)
+  expNeg <- sum(expTableAll[!expTableAll$target %in% allGenes, ]$Count)  # sum of all negative control or blank or unassigned barcodes (i.e non specific)
 
   numGenes <- length(expTable$target)
   numNeg <- length(expTableAll[!expTableAll$target %in% allGenes, ]$target)
 
   expTable$FDR <- 1
   for(i in allGenes) {
-    fdr = (expNeg / (expTable[expTable$target %in% i, ]$Count + expNeg) ) * (numGenes / numNeg) * 1/100
+    fdr = (expNeg / (expTable[expTable$target %in% i, ]$Count + expNeg)) * (numGenes / numNeg) * 1/100
     expTable[target == i, FDR := fdr]
   }
 
+  # Decide what value to return
   if(is.null(features)) {
-    return(mean(expTable$FDR))
+    mean_fdr <- mean(expTable$FDR)
   } else {
-    return(mean(expTable$FDR[expTable$target %in% features]))
+    mean_fdr <- mean(expTable$FDR[expTable$target %in% features])
   }
 
-}
+  # Return results as a dataframe
+  res <- data.frame(
+    sample_id = sample_id,
+    platform = platform,
+    value = mean_fdr
+  )
 
+  return(res)
+}
 
 
 #' This function calculates the mean number of transcripts per unit area for specified features (genes) in a Seurat object.
@@ -544,7 +678,7 @@ getGlobalFDR <- function(seu_obj = NULL, features = NULL, tx_file ='path_to_txFi
 #' measure of gene expression that accounts for differences in cell size.
 #' @title getTxPerArea
 #' @description
-#' Calculates the Mean Transcripts per Unit Area.
+#' Calculate the Mean Transcripts per Unit Area.
 #' @param seu_obj A Seurat object.
 #'        The object must have 'sample_id' and 'platform' metadata for identification and reporting. It is expected that
 #'        `seu_obj$cell_area` contains the area information for each cell.
@@ -587,7 +721,25 @@ getTxPerArea <- function(seu_obj = NULL, features=NULL,
 
     if(platform == 'CosMx') {
       cell_meta <- data.table::fread(file.path(cellSegMeta))
-      mean_tx_norm <- mean(cell_meta$nCount_RNA / cell_meta$Area.um2)
+      cell_meta <- data.frame(cell_meta)
+
+      if("nCount_RNA" %in% names(cell_meta) == FALSE) {
+        # Creating nCount_RNA column
+        nCount_RNA <- cell_meta %>%
+          group_by(cell_ID) %>%
+          tally() %>%
+          data.frame()
+        names(nCount_RNA)[2] <- "nCount_RNA"
+
+        cell_meta <- merge(cell_meta, nCount_RNA, by="cell_ID")
+      }
+
+      if("Area.um2" %in% names(cell_meta) == TRUE) {
+        names(cell_meta)[names(cell_meta$Area) %in% "Area.um2"] <- "Area"
+      }
+
+      #mean_tx_norm <- mean(cell_meta$nCount_RNA / cell_meta$Area.um2)
+      mean_tx_norm <- mean(cell_meta$nCount_RNA / cell_meta$Area)
 
       if(!is.null(features)) {
         ## Have to read the transcripts file
@@ -631,8 +783,10 @@ getTxPerArea <- function(seu_obj = NULL, features=NULL,
 
 }
 
+
 #' @title getTxPerCell
-#' @description Calculates the average number of transcripts per cell for the given features.
+#' @description
+#' Calculate the average number of transcripts per cell for the given features.
 #' @details
 #' This function calculates the mean number of transcripts per cell for a specified set of features (genes)
 #' in a Seurat object. If no features are specified, the function defaults to using all targets available
@@ -656,16 +810,40 @@ getTxPerCell <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_exprMa
 
   if(is.null(seu_obj)) {
     if(platform == 'Xenium') {
-      exp <- Matrix::readMM(file.path(expMat, 'matrix.mtx.gz'))
-      cols <- data.table::fread(file.path(expMat, 'barcodes.tsv.gz'), header = F)
-      rows <- data.table::fread(file.path(expMat, 'features.tsv.gz'), header = F)
-      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
-      colnames(exp) <- cols$V1 ## this is the barcodes of cells
+
+      expMat_checker <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+      n <- length(expMat_checker)
+      h5_file_path <- expMat_checker[1]
+      for (i in 2:n) {
+        one_string_only <- paste0(h5_file_path, expMat_checker[i], sep="")
+      }
+
+      if(grepl('.h5', one_string_only) == FALSE) {
+
+        mtx_bar_feat_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_bar_feat_path[grepl('matrix.mtx.gz', mtx_bar_feat_path)]
+        bar_path <- mtx_bar_feat_path[grepl('barcodes.tsv.gz', mtx_bar_feat_path)]
+        feat_path <- mtx_bar_feat_path[grepl('features.tsv.gz', mtx_bar_feat_path)]
+
+        exp <- Matrix::readMM(file.path(mtx_path))
+        cols <- data.table::fread(file.path(bar_path), header = F)
+        rows <- data.table::fread(file.path(feat_path), header = F)
+        rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+        colnames(exp) <- cols$V1 ## this is the barcodes of cells
+      } else{
+        mtx_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_path[grepl('.h5', mtx_path)]
+        exp <- Read10X_h5(filename = file.path(mtx_path), use.names = TRUE, unique.features = TRUE)
+        exp <- do.call(rbind, exp) #bind all the lists
+      }
     }
 
     if(platform == 'CosMx') {
       exp <- data.table::fread(file.path(expMat))
-      exp <- exp[, -c(1:2)]
+      remove_cols <- as.vector(c("V1","sampleID","slide","case", "fov", "cell_ID"))
+      exp <- data.frame(exp)
+      exp <- exp[, !colnames(exp) %in% remove_cols]
+      #exp <- exp[, -c(1:2)] # "fov", "cell_ID" have been removed above
       exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
 
     }
@@ -677,13 +855,16 @@ getTxPerCell <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_exprMa
     if(is.null(features)) {
       features <- rownames(exp)
       # remove non specific probes
-      features <- features[-grep('Unassigned*|NegControl*|BLANK*|SystemControl*', features)]
+      # features <- features[-grep('Unassigned*|NegControl*|BLANK*|SystemControl*', features)]
+      features <- features[-grep('Unassigned*|NegControl*|BLANK*|SystemControl*|NegPrb*', features)]
+
+
+
     }
 
     # Calculate average N of Txs per cell
     mean_tx <- mean(colSums(exp[features, ]))
-
-    return(mean_tx)
+    res <- mean_tx
 
   }
 
@@ -700,14 +881,17 @@ getTxPerCell <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_exprMa
       platform = unique(seu_obj$platform),
       value=mean_tx
     )
-    return(res)
+
   }
+
+  return(res)
 
 }
 
+
 #' @title getTxPerNuc
 #' @description
-#' Calculates the number of transcripts per nucleus.
+#' Calculate the number of transcripts per nucleus.
 #' @details
 #' This function calculates the mean number of transcripts localized within the nucleus
 #' for a specified set of features (genes) across all cells in a given dataset. This measurement
@@ -850,20 +1034,47 @@ getMeanExpression <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_e
 
   if(is.null(seu_obj)) {
     if(platform == 'Xenium') {
-      exp <- Matrix::readMM(file.path(expMat, 'matrix.mtx.gz'))
-      cols <- data.table::fread(file.path(expMat, 'barcodes.tsv.gz'), header = F)
-      rows <- data.table::fread(file.path(expMat, 'features.tsv.gz'), header = F)
-      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
-      colnames(exp) <- cols$V1 ## this is the barcodes of cells
-      # remove neg control
-      exp <- exp[-grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', rownames(exp)),]
+
+      expMat_checker <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+      n <- length(expMat_checker)
+      h5_file_path <- expMat_checker[1]
+      for (i in 2:n) {
+        one_string_only <- paste0(h5_file_path, expMat_checker[i], sep="")
+      }
+
+      if(grepl('.h5', one_string_only) == FALSE) {
+
+        mtx_bar_feat_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_bar_feat_path[grepl('matrix.mtx.gz', mtx_bar_feat_path)]
+        bar_path <- mtx_bar_feat_path[grepl('barcodes.tsv.gz', mtx_bar_feat_path)]
+        feat_path <- mtx_bar_feat_path[grepl('features.tsv.gz', mtx_bar_feat_path)]
+
+
+        exp <- Matrix::readMM(file.path(mtx_path))
+        cols <- data.table::fread(file.path(bar_path), header = F)
+        rows <- data.table::fread(file.path(feat_path), header = F)
+        rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+        colnames(exp) <- cols$V1 ## this is the barcodes of cells
+        # remove neg control
+        exp <- exp[-grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', rownames(exp)),]
+      } else{
+        mtx_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_path[grepl('.h5', mtx_path)]
+        exp <- Read10X_h5(filename = file.path(mtx_path), use.names = TRUE, unique.features = TRUE)
+        exp <- do.call(rbind, exp) #bind all the lists
+        exp <- exp[-grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', rownames(exp)),]
+
+      }
     }
 
     if(platform == 'CosMx') {
       exp <- data.table::fread(file.path(expMat))
+      remove_cols <- as.vector(c("V1","sampleID","slide","case", "fov", "cell_ID"))
+      exp <- data.frame(exp)
+      exp <- exp[, !colnames(exp) %in% remove_cols]
       ## remove first 2 columns - usually FOV and Cell_ID information
-      exp <- exp[, -c(1:2)]
-      exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
+      #exp <- exp[, -c(1:2)] # "fov", "cell_ID" have been removed above
+      exp <- t(exp)
 
     }
 
@@ -873,11 +1084,13 @@ getMeanExpression <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_e
 
     avg_exp_df <- as.data.frame(rowMeans(exp))
     colnames(avg_exp_df) <- 'MeanExpression'
+    avg_exp <- mean(avg_exp_df$MeanExpression)
 
     if(is.null(features)) {
-      return(avg_exp_df)
+      res <- avg_exp
     } else {
-      return(subset(avg_exp_df, rownames(avg_exp_df) %in% features))
+      avg_exp_df_sub <- subset(avg_exp_df, rownames(avg_exp_df) %in% features)
+      res <- mean(avg_exp_df_sub$MeanExpression)
     }
 
   }
@@ -907,9 +1120,9 @@ getMeanExpression <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_e
     res$platform <- unique(seu_obj$platform)
     res$sample_id <- unique(seu_obj$sample_id)
 
-    return(res)
-  }
 
+  }
+  return(res)
 }
 ### log-ratio of mean gene counts to mean neg probe counts
 #' @title getMeanSignalRatio
@@ -928,32 +1141,92 @@ getMeanExpression <- function(seu_obj = NULL, features=NULL, expMat = 'path_to_e
 #' used to assess the signal-to-noise ratio in the dataset.
 #' @export
 
-getMeanSignalRatio <- function(seu_obj,
-                               features=NULL){
-  if(is.null(features)){
-    features <- rownames(seu_obj)
-  } else{
-    features <- features
+getMeanSignalRatio <- function(seu_obj=NULL, features=NULL, platform=NULL, expMat = 'path_to_expMat'){
+
+  if(is.null(seu_obj)) {
+    if(platform == 'Xenium') {
+
+      expMat_checker <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+      n <- length(expMat_checker)
+      h5_file_path <- expMat_checker[1]
+      for (i in 2:n) {
+        one_string_only <- paste0(h5_file_path, expMat_checker[i], sep="")
+      }
+
+      if(grepl('.h5', one_string_only) == FALSE) {
+
+        mtx_bar_feat_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_bar_feat_path[grepl('matrix.mtx.gz', mtx_bar_feat_path)]
+        bar_path <- mtx_bar_feat_path[grepl('barcodes.tsv.gz', mtx_bar_feat_path)]
+        feat_path <- mtx_bar_feat_path[grepl('features.tsv.gz', mtx_bar_feat_path)]
+
+
+        exp <- Matrix::readMM(file.path(mtx_path))
+        cols <- data.table::fread(file.path(bar_path), header = F)
+        rows <- data.table::fread(file.path(feat_path), header = F)
+        rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+        colnames(exp) <- cols$V1 ## this is the barcodes of cells
+      } else {
+        mtx_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_path[grepl('.h5', mtx_path)]
+        exp <- Read10X_h5(filename = file.path(mtx_path), use.names = TRUE, unique.features = TRUE)
+        exp <- do.call(rbind, exp) #bind all the lists
+      }
+    }
+
+    if(platform == 'CosMx') {
+      exp <- data.table::fread(file.path(expMat))
+      remove_cols <- as.vector(c("V1","sampleID","slide","case", "fov", "cell_ID"))
+      exp <- data.frame(exp)
+      exp <- exp[, !colnames(exp) %in% remove_cols]
+      ## remove first 2 columns - usually FOV and Cell_ID information
+      #exp <- exp[, -c(1:2)] # "fov", "cell_ID" have been removed above
+      exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
+    }
+
+    noise <- exp[grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', rownames(exp)), ]
+    exp <- exp[-grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', rownames(exp)),]
+    #ratio <- mean( log10(rowMeans(exp + .1)) - log10(rowMeans(noise + .1)) )
+
+    if(is.null(features)) {
+      #return( suppressWarnings(mean( log10(rowMeans(exp + .1)) - log10(rowMeans(noise + .1)) )))
+      res <- suppressWarnings(mean( log10(rowMeans(exp + .1)) - log10(rowMeans(noise + .1)) ))
+    } else {
+      #return(suppressWarnings(mean( log10(rowMeans(exp[rownames(exp) %in% features,] + .1)) - log10(rowMeans(noise + .1)) )))
+      res <- suppressWarnings(mean( log10(rowMeans(exp[rownames(exp) %in% features,] + .1)) - log10(rowMeans(noise + .1)) ))
+    }
+
+
   }
 
-  tx_means <- rowMeans(seu_obj[["RNA"]]$counts[features,])
-  neg_probe_means <- rowMeans(seu_obj[["ControlProbe"]]$counts)
+  if(!is.null(seu_obj)) {
+    if(is.null(features)){
+      features <- rownames(seu_obj)
+    } else{
+      features <- features
+    }
 
-  ratio <- log10(tx_means) - log10(mean(neg_probe_means))
-  ratio <- mean(ratio)
+    tx_means <- rowMeans(seu_obj[["RNA"]]$counts[features,])
+    neg_probe_means <- rowMeans(seu_obj[["ControlProbe"]]$counts)
 
-  res <- data.frame(
-    sample_id = unique(seu_obj$sample_id),
-    platform = unique(seu_obj$platform),
-    value=ratio
-  )
+    ratio <- log10(tx_means) - log10(mean(neg_probe_means))
+    ratio <- mean(ratio)
 
+    res <- data.frame(
+      sample_id = unique(seu_obj$sample_id),
+      platform = unique(seu_obj$platform),
+      value=ratio
+    )
+
+
+  }
   return(res)
+
 }
 
 #' @title getCellTxFraction
 #' @description
-#' Calculates fraction of transcripts in cells from spatial transcriptomic data.
+#' Calculate fraction of transcripts in cells from spatial transcriptomic data.
 #' @details
 #' The function works by reading transcript metadata for the given sample and platform, then filtering for the specified features (if any).
 #' For each platform, it identifies transcripts that are not assigned to any cell ('UNASSIGNED' for Xenium, 'None' for CosMx, etc.) and calculates the fraction of transcripts that are assigned to cells.
@@ -969,7 +1242,7 @@ getMeanSignalRatio <- function(seu_obj,
 #' @export
 #' @import Seurat
 getCellTxFraction <- function(seu_obj=NULL, features=NULL, tx_file = 'path_to_tx',
-                              platform = NULL,path){
+                              platform = NULL, path){
 
   if(is.null(seu_obj)) {
 
@@ -990,12 +1263,16 @@ getCellTxFraction <- function(seu_obj=NULL, features=NULL, tx_file = 'path_to_tx
 
     if(platform == 'CosMx') {
       if(is.null(features)) {
-        unassigned_tx_count <- sum(tx_df$CellComp == '')
+        # unassigned_tx_count <- sum(tx_df$CellComp == '')
+        unassigned_tx_count <- sum(tx_df$CellComp == 'None')
+        total_tx_count <- nrow(tx_df)
 
       } else {
         tx_df <- tx_df[tx_df$target %in% features,]
         total_tx_count <- nrow(tx_df)
-        unassigned_tx_count <- sum(tx_df$CellComp == '')
+        # unassigned_tx_count <- sum(tx_df$CellComp == '')
+        unassigned_tx_count <- sum(tx_df$CellComp == 'None')
+
 
       }
 
@@ -1020,7 +1297,7 @@ getCellTxFraction <- function(seu_obj=NULL, features=NULL, tx_file = 'path_to_tx
 
     if(platform == "Xenium"){
       #tx_df <- filter(tx_df, features %in% feature_name)
-      tx_df <- tx_df[tx_df$target%in% features, ]
+      tx_df <- tx_df[tx_df$feature_name %in% features, ]
       total_tx_count <- nrow(tx_df)
       unassigned_tx_count <- sum(tx_df$cell_id == "UNASSIGNED")
 
@@ -1055,11 +1332,12 @@ getCellTxFraction <- function(seu_obj=NULL, features=NULL, tx_file = 'path_to_tx
 
 
 
+
 ##### Dynamic Range
 # Log-ratio of highest mean exp vs. mean noise
 #' @title getMaxRatio
 #' @description
-#' Calculates the Log-ratio of highest mean expression vs. mean noise.
+#' Calculate the Log-ratio of highest mean expression vs. mean noise.
 #' @details
 #' The function identifies the maximum mean expression value among the specified features
 #' (or all features if none are specified) and calculates its log-ratio to the mean expression value
@@ -1080,28 +1358,53 @@ getMaxRatio <- function(seu_obj = NULL, features=NULL, expMat ='path_to_expMat',
 
   if(is.null(seu_obj)) {
     if(platform == 'Xenium') {
-      exp <- Matrix::readMM(file.path(expMat, 'matrix.mtx.gz'))
-      cols <- data.table::fread(file.path(expMat, 'barcodes.tsv.gz'), header = F)
-      rows <- data.table::fread(file.path(expMat, 'features.tsv.gz'), header = F)
-      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
-      colnames(exp) <- cols$V1 ## this is the barcodes of cells
+      expMat_checker <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+      n <- length(expMat_checker)
+      h5_file_path <- expMat_checker[1]
+      for (i in 2:n) {
+        one_string_only <- paste0(h5_file_path, expMat_checker[i], sep="")
+      }
+
+      if(grepl('.h5', one_string_only) == FALSE) {
+
+
+        mtx_bar_feat_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_bar_feat_path[grepl('matrix.mtx.gz', mtx_bar_feat_path)]
+        bar_path <- mtx_bar_feat_path[grepl('barcodes.tsv.gz', mtx_bar_feat_path)]
+        feat_path <- mtx_bar_feat_path[grepl('features.tsv.gz', mtx_bar_feat_path)]
+
+
+        exp <- Matrix::readMM(file.path(mtx_path))
+        cols <- data.table::fread(file.path(bar_path), header = F)
+        rows <- data.table::fread(file.path(feat_path), header = F)
+        rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+        colnames(exp) <- cols$V1 ## this is the barcodes of cells
+      } else {
+        mtx_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_path[grepl('.h5', mtx_path)]
+        exp <- Read10X_h5(filename = file.path(mtx_path), use.names = TRUE, unique.features = TRUE)
+        exp <- do.call(rbind, exp) #bind all the lists
+      }
     }
 
     if(platform == 'CosMx') {
       exp <- data.table::fread(file.path(expMat))
+      remove_cols <- as.vector(c("V1","sampleID","slide","case", "fov", "cell_ID"))
+      exp <- data.frame(exp)
+      exp <- exp[, !colnames(exp) %in% remove_cols]
       ## remove first 2 columns - usually FOV and Cell_ID information
-      exp <- exp[, -c(1:2)]
+      #exp <- exp[, -c(1:2)] # "fov", "cell_ID" have been removed above
       exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
     }
-
     tx_means <- rowMeans(exp[-grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', rownames(exp)),])
     neg_probe_means <- rowMeans(exp[grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', rownames(exp)), ])
 
     if(is.null(features)) {
-      return( log10(max(tx_means)) - log10(mean(neg_probe_means)) )
-
+      #return( log10(max(tx_means)) - log10(mean(neg_probe_means)) )
+      res <- log10(max(tx_means)) - log10(mean(neg_probe_means))
     } else {
-      return( log10(max(tx_means[features])) - log10(mean(neg_probe_means)) )
+      #return( log10(max(tx_means[features])) - log10(mean(neg_probe_means)) )
+      res <- log10(max(tx_means[features])) - log10(mean(neg_probe_means))
     }
 
   }
@@ -1126,13 +1429,15 @@ getMaxRatio <- function(seu_obj = NULL, features=NULL, expMat ='path_to_expMat',
       value=ratio
     )
 
-    return(res)
+
   }
+  return(res)
 }
+
 # Distribution of maximal values
 #' @title getMaxDetection
 #' @description
-#' Calculates the distribution of maximal values.
+#' Calculate the distribution of maximal values.
 #' @details This function identifies the maximal expression values across the specified set of features
 #' (or all features if none are specified) within the dataset, illustrating the upper bounds of gene
 #' expression. Such information is crucial for assessing the dataset's dynamic range and the sensitivity
@@ -1157,27 +1462,55 @@ getMaxDetection <- function(seu_obj = NULL, features=NULL, expMat ='path_to_expM
 
   if(is.null(seu_obj)) {
     if(platform == 'Xenium') {
-      exp <- Matrix::readMM(file.path(expMat, 'matrix.mtx.gz'))
-      cols <- data.table::fread(file.path(expMat, 'barcodes.tsv.gz'), header = F)
-      rows <- data.table::fread(file.path(expMat, 'features.tsv.gz'), header = F)
-      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
-      colnames(exp) <- cols$V1 ## this is the barcodes of cells
+
+      expMat_checker <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+      n <- length(expMat_checker)
+      h5_file_path <- expMat_checker[1]
+      for (i in 2:n) {
+        one_string_only <- paste0(h5_file_path, expMat_checker[i], sep="")
+      }
+
+      if(grepl('.h5', one_string_only) == FALSE) {
+
+        mtx_bar_feat_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_bar_feat_path[grepl('matrix.mtx.gz', mtx_bar_feat_path)]
+        bar_path <- mtx_bar_feat_path[grepl('barcodes.tsv.gz', mtx_bar_feat_path)]
+        feat_path <- mtx_bar_feat_path[grepl('features.tsv.gz', mtx_bar_feat_path)]
+
+
+        exp <- Matrix::readMM(file.path(mtx_path))
+        cols <- data.table::fread(file.path(bar_path), header = F)
+        rows <- data.table::fread(file.path(feat_path), header = F)
+        rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+        colnames(exp) <- cols$V1 ## this is the barcodes of cells
+      } else {
+        mtx_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_path[grepl('.h5', mtx_path)]
+        exp <- Read10X_h5(filename = file.path(mtx_path), use.names = TRUE, unique.features = TRUE)
+        exp <- do.call(rbind, exp) #bind all the lists
+      }
     }
+
 
     if(platform == 'CosMx') {
       exp <- data.table::fread(file.path(expMat))
+      remove_cols <- as.vector(c("V1","sampleID","slide","case", "fov", "cell_ID"))
+      exp <- data.frame(exp)
+      exp <- exp[, !colnames(exp) %in% remove_cols]
       ## remove first 2 columns - usually FOV and Cell_ID information
-      exp <- exp[, -c(1:2)]
-      exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
+      #exp <- exp[, -c(1:2)] # "fov", "cell_ID" have been removed above
+      exp <- t(exp)
     }
 
     max_vals <- data.frame(matrixStats::rowMaxs(as.matrix(exp)))
     colnames(max_vals) <- 'MaxValue'
+    max_val <- max(max_vals$MaxValue)
 
     if(is.null(features)) {
-      return(max_vals)
+      res <- max_val
     } else {
-      return(subset(max_vals, rownames(max_vals) %in% features))
+      max_vals <- subset(max_vals, rownames(max_vals) %in% features)
+      res <- max(max_vals$MaxValue)
     }
 
   }
@@ -1200,15 +1533,16 @@ getMaxDetection <- function(seu_obj = NULL, features=NULL, expMat ='path_to_expM
       gene = features
     )
 
-    return(res)
   }
+  return(res)
 
 }
+
 
 ##### Mutually Exclusive Co-expression Rate (MECR) Implementation
 #' @title getMECR
 #' @description
-#' Calculates Mutually Exclusive Co-expression Rate (MECR) which is a metric used for determining specificity.
+#' Calculate Mutually Exclusive Co-expression Rate (MECR) which is a metric used for determining specificity.
 #' @details
 #' Based on a predefined set of markers and their associated cell types, this function computes the rate
 #' at which pairs of markers are expressed in mutually exclusive patterns within cells. The calculation is limited
@@ -1247,18 +1581,43 @@ getMECR <- function(seu_obj=NULL, expMat = 'path_to_expMat', platform = NULL) {
 
   if(is.null(seu_obj)) {
     if(platform == 'Xenium') {
-      exp <- Matrix::readMM(file.path(expMat, 'matrix.mtx.gz'))
-      cols <- data.table::fread(file.path(expMat, 'barcodes.tsv.gz'), header = F)
-      rows <- data.table::fread(file.path(expMat, 'features.tsv.gz'), header = F)
-      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
-      colnames(exp) <- cols$V1 ## this is the barcodes of cells
+
+      expMat_checker <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+      n <- length(expMat_checker)
+      h5_file_path <- expMat_checker[1]
+      for (i in 2:n) {
+        one_string_only <- paste0(h5_file_path, expMat_checker[i], sep="")
+      }
+
+      if(grepl('.h5', one_string_only) == FALSE) {
+        mtx_bar_feat_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_bar_feat_path[grepl('matrix.mtx.gz', mtx_bar_feat_path)]
+        bar_path <- mtx_bar_feat_path[grepl('barcodes.tsv.gz', mtx_bar_feat_path)]
+        feat_path <- mtx_bar_feat_path[grepl('features.tsv.gz', mtx_bar_feat_path)]
+
+
+        exp <- Matrix::readMM(file.path(mtx_path))
+        cols <- data.table::fread(file.path(bar_path), header = F)
+        rows <- data.table::fread(file.path(feat_path), header = F)
+        rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+        colnames(exp) <- cols$V1 ## this is the barcodes of cells
+      } else {
+        mtx_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_path[grepl('.h5', mtx_path)]
+        exp <- Read10X_h5(filename = file.path(mtx_path), use.names = TRUE, unique.features = TRUE)
+        exp <- do.call(rbind, exp) #bind all the lists
+      }
     }
+
 
     if(platform == 'CosMx') {
       exp <- data.table::fread(file.path(expMat))
+      remove_cols <- as.vector(c("V1","sampleID","slide","case", "fov", "cell_ID"))
+      exp <- data.frame(exp)
+      exp <- exp[, !colnames(exp) %in% remove_cols]
       ## remove first 2 columns - usually FOV and Cell_ID information
-      exp <- exp[, -c(1:2)]
-      exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
+      #exp <- exp[, -c(1:2)] # "fov", "cell_ID" have been removed above
+      exp <- t(exp)
     }
 
     genes <- intersect(rownames(exp), rownames(marker_df))
@@ -1267,11 +1626,8 @@ getMECR <- function(seu_obj=NULL, expMat = 'path_to_expMat', platform = NULL) {
   }
 
   if(!is.null(seu_obj)) {
-
     genes <- intersect(rownames(seu_obj), rownames(marker_df))
     mtx <- as.matrix(seu_obj[['RNA']]$counts[genes, ])
-
-
   }
 
   coexp.rates <- c()
@@ -1290,20 +1646,24 @@ getMECR <- function(seu_obj=NULL, expMat = 'path_to_expMat', platform = NULL) {
   }
 
 
-  res <- data.frame(
-    sample_id = unique(seu_obj$sample_id),
-    platform = unique(seu_obj$platform),
-    value=round(mean(coexp.rates), digits=3)
-  )
 
-  return(res)
+  if(is.null(seu_obj)) {
+    return(round(mean(coexp.rates), digits=3))
+  } else {
+    res <- data.frame(
+      sample_id = unique(seu_obj$sample_id),
+      platform = unique(seu_obj$platform),
+      value=round(mean(coexp.rates), digits=3)
+    )
+    return(res)
+  }
+
 }
-
 ##### Distribution spatial autocorrelation
 
 #' @title getMorans
 #' @description
-#' Calculates the Moran's I statistic for spatial autocorrelation of a dataset. Spatial autocorrelation is multi-directional and multi-dimensional, it has a value from -1 to 1.
+#' Calculate the Moran's I statistic for spatial autocorrelation of a dataset. Spatial autocorrelation is multi-directional and multi-dimensional, it has a value from -1 to 1.
 #' @param  seu_obj A seurat object.
 #' @param features A character vector specifying the features (genes or probes) to include in the analysis. If `NULL` (the default), all features in `seu_obj` are used.
 #' @return A data frame.
@@ -1399,7 +1759,7 @@ getMorans <- function(seu_obj,
 ##### Cluster evaluation: silhouette width
 #' @title getSilhouetteWidth
 #' @description
-#' Calculates the silhouette width which provides a metric for evaluating consistency within data clusters.
+#' Calculate the silhouette width which provides a metric for evaluating consistency within data clusters.
 #' @details The silhouette width calculation involves preprocessing steps including normalization and scaling of the data, PCA for dimensionality reduction, and clustering.
 #' The silhouette width is then calculated for a downsampled subset of cells to ensure computational efficiency.
 #' This metric helps in assessing the cohesion and separation of the identified clusters, with higher values indicating better defined clusters.
@@ -1443,7 +1803,7 @@ getSilhouetteWidth <- function(seu_obj){
 #For example, .99 sparsity means 99% of the values are zero. Similarly, a sparsity of 0 means the matrix is fully dense.
 #' @title  getSparsity
 #' @description
-#' Calculates the sparsity (as a count or proportion) of a gene expression count matrix.
+#' Calculate the sparsity (as a count or proportion) of a gene expression count matrix.
 #' @details
 #' For example, .99 sparsity means 99% of the values are zero. Similarly, a sparsity of 0 means the matrix is fully dense.
 #' @param seu_obj A Seurat object.
@@ -1462,23 +1822,51 @@ getSparsity <- function(seu_obj=NULL, features = NULL, expMat = 'path_to_expMat'
 
   if(is.null(seu_obj)) {
     if(platform == 'Xenium') {
-      exp <- Matrix::readMM(file.path(expMat, 'matrix.mtx.gz'))
-      cols <- data.table::fread(file.path(expMat, 'barcodes.tsv.gz'), header = F)
-      rows <- data.table::fread(file.path(expMat, 'features.tsv.gz'), header = F)
-      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
-      colnames(exp) <- cols$V1 ## this is the barcodes of cells
+
+      expMat_checker <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+      n <- length(expMat_checker)
+      h5_file_path <- expMat_checker[1]
+      for (i in 2:n) {
+        one_string_only <- paste0(h5_file_path, expMat_checker[i], sep="")
+      }
+
+      if(grepl('.h5', one_string_only) == FALSE) {
+
+        mtx_bar_feat_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_bar_feat_path[grepl('matrix.mtx.gz', mtx_bar_feat_path)]
+        bar_path <- mtx_bar_feat_path[grepl('barcodes.tsv.gz', mtx_bar_feat_path)]
+        feat_path <- mtx_bar_feat_path[grepl('features.tsv.gz', mtx_bar_feat_path)]
+
+
+        exp <- Matrix::readMM(file.path(mtx_path))
+        cols <- data.table::fread(file.path(bar_path), header = F)
+        rows <- data.table::fread(file.path(feat_path), header = F)
+        rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+        colnames(exp) <- cols$V1 ## this is the barcodes of cells
+      }  else {
+        mtx_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_path[grepl('.h5', mtx_path)]
+        exp <- Read10X_h5(filename = file.path(mtx_path), use.names = TRUE, unique.features = TRUE)
+        exp <- do.call(rbind, exp) #bind all the lists
+      }
     }
 
     if(platform == 'CosMx') {
       exp <- data.table::fread(file.path(expMat))
-      exp <- exp[, -c(1:2)]
+      remove_cols <- as.vector(c("V1","sampleID","slide","case", "fov", "cell_ID"))
+      exp <- data.frame(exp)
+      exp <- exp[, !colnames(exp) %in% remove_cols]
+      ## remove first 2 columns - usually FOV and Cell_ID information
+      #exp <- exp[, -c(1:2)] # "fov", "cell_ID" have been removed above
       exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
     }
 
     if(is.null(features)) {
-      return(coop::sparsity(as.matrix(exp)))
+      #return(coop::sparsity(as.matrix(exp)))
+      res <- coop::sparsity(as.matrix(exp))
     } else {
-      return(coop::sparsity(as.matrix(exp[rownames(exp) %in% features, ])))
+      #return(coop::sparsity(as.matrix(exp[rownames(exp) %in% features, ])))
+      res <- coop::sparsity(as.matrix(exp[rownames(exp) %in% features, ]))
     }
   }
 
@@ -1489,14 +1877,16 @@ getSparsity <- function(seu_obj=NULL, features = NULL, expMat = 'path_to_expMat'
       platform = unique(seu_obj$platform),
       value=round(value, digits=3)
     )
-    return(res)
+
   }
+  return(res)
 
 }
 
+
 #' @title getEntropy
 #' @description
-#' Calculates the entropy of the RNA count matrix within a Seurat object (seu_obj).
+#' Calculate the entropy of the RNA count matrix within a Seurat object (seu_obj).
 #' @details
 #' Entropy is used to quantify the diversity or uniformity of gene expression across the dataset. This function calculates the entropy of the RNA count matrix, reflecting the distribution of gene expression levels.
 #' A higher entropy value suggests a more uniform distribution across genes, while a lower value indicates concentration in a smaller number of genes.
@@ -1515,25 +1905,55 @@ getEntropy <- function(seu_obj=NULL, features = NULL, expMat = 'path_to_expMat',
 
   if(is.null(seu_obj)) {
     if(platform == 'Xenium') {
-      exp <- Matrix::readMM(file.path(expMat, 'matrix.mtx.gz'))
-      cols <- data.table::fread(file.path(expMat, 'barcodes.tsv.gz'), header = F)
-      rows <- data.table::fread(file.path(expMat, 'features.tsv.gz'), header = F)
-      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
-      colnames(exp) <- cols$V1 ## this is the barcodes of cells
+
+      expMat_checker <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+      n <- length(expMat_checker)
+      h5_file_path <- expMat_checker[1]
+      for (i in 2:n) {
+        one_string_only <- paste0(h5_file_path, expMat_checker[i], sep="")
+      }
+
+      if(grepl('.h5', one_string_only) == FALSE) {
+
+        mtx_bar_feat_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_bar_feat_path[grepl('matrix.mtx.gz', mtx_bar_feat_path)]
+        bar_path <- mtx_bar_feat_path[grepl('barcodes.tsv.gz', mtx_bar_feat_path)]
+        feat_path <- mtx_bar_feat_path[grepl('features.tsv.gz', mtx_bar_feat_path)]
+
+
+        exp <- Matrix::readMM(file.path(mtx_path))
+        cols <- data.table::fread(file.path(bar_path), header = F)
+        rows <- data.table::fread(file.path(feat_path), header = F)
+        rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+        colnames(exp) <- cols$V1 ## this is the barcodes of cells
+      } else {
+        mtx_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_path[grepl('.h5', mtx_path)]
+        exp <- Read10X_h5(filename = file.path(mtx_path), use.names = TRUE, unique.features = TRUE)
+        exp <- do.call(rbind, exp) #bind all the lists
+      }
     }
 
     if(platform == 'CosMx') {
       exp <- data.table::fread(file.path(expMat))
-      exp <- exp[, -c(1:2)]
-      exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
+      remove_cols <- as.vector(c("V1","sampleID","slide","case", "fov", "cell_ID"))
+      exp <- data.frame(exp)
+      exp <- exp[, !colnames(exp) %in% remove_cols]
+      ## remove first 2 columns - usually FOV and Cell_ID information
+      #exp <- exp[, -c(1:2)] # "fov", "cell_ID" have been removed above
+      exp <- t(exp)
     }
 
     if(is.null(features)) {
-      return(BioQC::entropy(as.matrix(exp)))
+
+      #return(BioQC::entropy(as.matrix(exp)))
+      res <- BioQC::entropy(as.matrix(exp))
     } else {
-      return(BioQC::entropy(as.matrix(exp[rownames(exp) %in% features, ])))
+      #return(BioQC::entropy(as.matrix(exp[rownames(exp) %in% features, ])))
+      res <- BioQC::entropy(as.matrix(exp[rownames(exp) %in% features, ]))
     }
   }
+
 
 
   if(!is.null(seu_obj)) {
@@ -1543,9 +1963,9 @@ getEntropy <- function(seu_obj=NULL, features = NULL, expMat = 'path_to_expMat',
       platform = unique(seu_obj$platform),
       value=round(value, digits=3)
     )
-    return(res)
-  }
 
+  }
+  return(res)
 }
 
 
@@ -1799,6 +2219,168 @@ getClusterMetrics <- function(seu_obj, metadata_col){
     value=c(ari, nmi$value),
     metric = c("ARI", "NMI")
   )
+
+}
+
+#' @title getPanelSize
+#' Get Panel Size from Expression Matrix or Seurat Object.
+#' @description
+#' Calculate the size of the panel by counting the number of features
+#' in an expression matrix, excluding negative or control features. It can handle
+#' different types of expression data input, including direct paths to expression
+#' matrices or Seurat object with embedded expression data.
+#' @param seu_obj An optional Seurat object containing the expression data. If provided,
+#'        the function will calculate the panel size based on the number of features
+#'        present in the object.
+#' @param expMat The path to the expression matrix file or directory containing
+#'        expression data files. This parameter is used if no Seurat object is provided.
+#'        The function supports both flat files and Hierarchical Data Format (HDF5) files.
+#' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+#'        and 'Merscope'. Note: 'Merscope' is currently not supported.
+#' @return Returns an integer indicating the number of valid features (excluding controls
+#'         and system features) present in the expression data.
+getPanelSize <- function(seu_obj = NULL, expMat = 'path_to_expMat', platform = NULL) {
+  if(is.null(seu_obj)) {
+    if(platform == 'Xenium') {
+      expMat_checker <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+      n <- length(expMat_checker)
+      h5_file_path <- expMat_checker[1]
+      for (i in 2:n) {
+        one_string_only <- paste0(h5_file_path, expMat_checker[i], sep="")
+      }
+
+      if(grepl('.h5', one_string_only) == FALSE) {
+        mtx_bar_feat_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        feat_path <- mtx_bar_feat_path[grepl('features.tsv.gz', mtx_bar_feat_path)]
+        tmp <- fread(file.path(feat_path), header = F)
+        nPanel <- nrow(tmp) - length(grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', tmp$V1))
+      } else {
+        mtx_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+        mtx_path <- mtx_path[grepl('.h5', mtx_path)]
+        exp <- Read10X_h5(filename = file.path(mtx_path), use.names = TRUE, unique.features = TRUE)
+        tmp <- do.call(rbind, exp) #bind all the lists
+        nPanel <-  nrow(tmp) - length(grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', rownames(tmp)))
+      }
+    }
+    if(platform == 'CosMx') {
+      tmp <- data.table::fread(expMat)
+      nPanel <- ncol(tmp) - length(grep('Neg*|SystemControl*|Blank*|BLANK*', colnames(tmp))) - 2 ## - 2 because the first 2 columns are FOV and cell id
+    }
+  }
+
+  if(!is.null(seu_obj)) {
+    nPanel <- nrow(seu_obj)
+  }
+
+  return(nPanel)
+
+}
+
+
+#'@title getComplexity
+#'@description
+#'Calculate the complexity of expression data, determining the number
+#' of features (genes) required to reach half of the total expression sum in a dataset.
+#' @param seu_obj An optional Seurat object containing the expression data. If provided,
+#'        the function will calculate complexity based on the data in the object.
+#' @param features Optional character vector of features to focus the complexity calculation
+#'        on a subset of all features. If NULL, all features are considered.
+#' @param expMat The path to the expression matrix file or directory containing
+#'        expression data files. This parameter is used if no Seurat object is provided.
+#'        This function supports processing of '.mtx.gz' for sparse matrices, or '.h5'
+#'        files for HDF5 format expression matrices.
+#' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+#'        and 'Merscope'. Note: 'Merscope' is currently not supported.
+#' @details
+#' Calculate the total expression and determines the minimal set of features accounting for
+#' at least half of this total, either across all features or a specified subset. If a Seurat
+#' object is used, it derives the complexity from the RNA assay counts.
+#' @export
+
+getComplexity <- function(seu_obj=NULL, features = NULL, expMat = 'path_to_expMat', platform = NULL) {
+if(is.null(seu_obj)) {
+  if(platform == 'Xenium') {
+
+    expMat_checker <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+    n <- length(expMat_checker)
+    h5_file_path <- expMat_checker[1]
+    for (i in 2:n) {
+      one_string_only <- paste0(h5_file_path, expMat_checker[i], sep="")
+    }
+
+    if(grepl('.h5', one_string_only) == FALSE) {
+
+      mtx_bar_feat_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+      mtx_path <- mtx_bar_feat_path[grepl('matrix.mtx.gz', mtx_bar_feat_path)]
+      bar_path <- mtx_bar_feat_path[grepl('barcodes.tsv.gz', mtx_bar_feat_path)]
+      feat_path <- mtx_bar_feat_path[grepl('features.tsv.gz', mtx_bar_feat_path)]
+
+      exp <- Matrix::readMM(file.path(mtx_path))
+      cols <- data.table::fread(file.path(bar_path), header = F)
+      rows <- data.table::fread(file.path(feat_path), header = F)
+      rownames(exp) <- rows$V2 ## this is the gene symbol column of the dataframe rows
+      colnames(exp) <- cols$V1 ## this is the barcodes of cells
+
+    } else {
+      mtx_path <- fs::dir_ls(expMat, recurse = TRUE, type = "file")
+      mtx_path <- mtx_path[grepl('.h5', mtx_path)]
+      exp <- Read10X_h5(filename = file.path(mtx_path), use.names = TRUE, unique.features = TRUE)
+      exp <- do.call(rbind, exp) #bind all the lists
+    }
+  }
+
+  if(platform == 'CosMx') {
+    exp <- data.table::fread(file.path(expMat))
+    remove_cols <- as.vector(c("V1","sampleID","slide","case", "fov", "cell_ID"))
+    exp <- data.frame(exp)
+    exp <- exp[, !colnames(exp) %in% remove_cols]
+    ## remove first 2 columns - usually FOV and Cell_ID information
+    #exp <- exp[, -c(1:2)] # "fov", "cell_ID" have been removed above
+    exp <- t(exp) ## transposing for consistency  - row = genes, column= cells
+  }
+
+  total_sum <- sum(exp)
+
+
+  if(is.null(features)) {
+
+    row_sums <- rowSums(exp)
+    cumulative_sums <- cumsum(row_sums)
+
+    return(as.integer( which(cumulative_sums >= total_sum / 2)[1]))
+    #cumulative_sums <- as.integer( which(cumulative_sums >= total_sum / 2)[1])
+
+
+  }
+
+  if(!is.null(features)) {
+    total_sum_feat <- sum(exp[rownames(exp) %in% features, ])
+    row_sums <- rowSums(as.data.frame(exp[rownames(exp) %in% features, ]))
+    cumulative_sums <- cumsum(row_sums)
+  }
+
+  result <- which(cumulative_sums >= total_sum / 2)[1]
+  weigh <- 31
+
+  res <- as.integer(result) / (weigh * ( nrow(exp) - length(grep('Neg*|SystemControl*|Blank*|BLANK*|Unassigned*', rownames(exp)))) )
+}
+
+if(!is.null(seu_obj)) {
+
+  total_sum <- sum(seu_obj@assays$RNA$counts)
+  row_sums <- rowSums(seu_obj@assays$RNA$counts)
+  cumulative_sums <- cumsum(row_sums)
+
+
+  res <- data.frame(
+    sample_id = unique(seu_obj$sample_id),
+    platform = unique(seu_obj$platform),
+    value=which(cumulative_sums >= total_sum / 2)[1]
+  )
+
+}
+
+return(res)
 
 }
 
@@ -2465,107 +3047,75 @@ plotMetrics <- function(metrics_list = NULL, PlotAutocorr = T, PlotSparsity = T,
 
 ## QCreport Genereate
 
-
-library(dplyr)
-library(gridExtra)
-library(ggplot2)
+#'@description
 #' Generate QC Report Table for Seurat Object
-#'
-#' This function generates a QC report for a given Seurat object, allowing users to specify features and
+#' @details
+#' Generate a QC report for a given Seurat object, allowing users to specify features and
 #' output to a PDF file. It provides various statistical analyses including entropy, sparsity,
 #' transcript counts per area, transcript counts per cell, and signal ratios. It also adjusts its behavior
 #' based on the specified platform within the Seurat object (Xenium, CosMx, or Merscope).
-#'
+#' @title genereateQCreport_table
 #' @param seu_obj A Seurat object, which must have properties like `path`, `platform`, and specific assay data.
 #'                Must inherit from "Seurat".
 #' @param features Optional; A character vector of features to include in the analysis.
 #'                 Defaults to all features in `seu_obj` if `NULL`.
 #' @param pdfFile A character string specifying the path and name of the output PDF file.
 #'                Defaults to "QCReportTable.pdf".
-#'
+#' @param sample_id Identifier for the sample being processed.
+#' @param path The file path from which to load the spatial transcriptomics data.
+#' @param platform The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
+#'        and 'Merscope'. Note: 'Merscope' is currently not supported.
 #' @return A data frame with the QC metrics for the provided Seurat object, which is also printed to the console.
 #'         Additionally, a PDF file is generated containing a plot and table of the metrics.
 #'
-#' @details The function calculates various metrics such as entropy and sparsity using the `BioQC` and `coop` packages.
+#' @details Calculate various metrics such as entropy and sparsity using the `BioQC` and `coop` packages.
 #'          It adjusts its processing logic based on the 'platform' attribute of the Seurat object to handle data from
 #'          different technologies like Xenium, CosMx, or Merscope. It stops with an error if the object is not a Seurat object.
 #'          The results are plotted using `ggplot2` and `gridExtra` for layout adjustments.
-#'
-#' @examples
-#' # Assume 'seu_obj' is a preloaded Seurat object
-#' genereateQCreport_table(seu_obj)
-#'
 #' @import dplyr
 #' @import ggplot2
 #' @import gridExtra
 #' @importFrom BioQC entropy
 #' @importFrom coop sparsity
 #' @export
-genereateQCreport_table <-
-  function(seu_obj, features = NULL, pdfFile = "QCReportTable.pdf") {
-    if (!inherits(seu_obj, "Seurat")) {
-      stop("Input must be a Seurat object.")
+generateQCreport_table <- function(seu_obj=NULL, features=NULL, pdfFile="QCReportTable.pdf", sample_id=NULL, path=NULL, platform=NULL) {
+  if (!inherits(seu_obj, "Seurat") && !is.null(seu_obj)) {
+    stop("Input must be a Seurat object or parameters must be provided to load one.")
+  }
+
+  # Check if a Seurat object needs to be loaded
+  if (is.null(seu_obj)) {
+    if (is.null(sample_id) || is.null(path) || is.null(platform)) {
+      stop("Missing parameters to load spatial data. Please provide sample_id, path, and platform.")
     }
+    seu_obj <- readSpatial(sample_id=sample_id, path=path, platform=platform, seurat=TRUE)
+  }
 
-    if(is.null(features)){
-      features <- rownames(seu_obj)
-    } else{
-      features <- features
-    }
+  if (is.null(features)) {
+    features <- rownames(seu_obj)
+  }
 
-    #conflicts_prefer("filter", "dplyr")
-    path <- unique(seu_obj$path)
-    platform <- unique(seu_obj$platform)
-    tx_df <- readTxMeta(path, platform)
-    # Extract metrics
-    entropy_value = BioQC::entropy(as.matrix(seu_obj@assays$RNA$counts))
-    sparsity_value = coop::sparsity(as.matrix(seu_obj@assays$RNA$counts))
-    ncell = ncol(seu_obj)
+  # Extract metrics
+  entropy_value <- BioQC::entropy(as.matrix(seu_obj@assays$RNA$counts))
+  sparsity_value <- coop::sparsity(as.matrix(seu_obj@assays$RNA$counts))
+  ncell <- ncol(seu_obj)
 
-    # More calculations
-    tx_means <- rowMeans(seu_obj[["RNA"]]$counts[features,])
-    neg_probe_means <- rowMeans(seu_obj[["ControlProbe"]]$counts)
-    ratio = log10(tx_means) - log10(mean(neg_probe_means))
-    mean_signal_ratio = mean(ratio)
+  tx_means <- rowMeans(seu_obj[["RNA"]]$counts[features, ])
+  neg_probe_means <- rowMeans(seu_obj[["ControlProbe"]]$counts)
+  ratio <- log10(tx_means) - log10(mean(neg_probe_means))
+  mean_signal_ratio <- mean(ratio)
 
-    tx_count = colSums(seu_obj[["RNA"]]$counts[features,])
-    mean_tx_norm = mean(tx_count / seu_obj$cell_area)
-    tx_perarea = mean_tx_norm
+  tx_count <- colSums(seu_obj[["RNA"]]$counts[features, ])
+  mean_tx_norm <- mean(tx_count / seu_obj$cell_area)
+  tx_perarea <- mean_tx_norm
 
-    mean_tx = mean(colSums(seu_obj[["RNA"]]$counts[features,]))
-    tx_percell = mean_tx
+  mean_tx <- mean(colSums(seu_obj[["RNA"]]$counts[features, ]))
+  tx_percell <- mean_tx
 
-    tx_means <- rowMeans(seu_obj[["RNA"]]$counts[features,])
-    neg_probe_means <- rowMeans(seu_obj[["ControlProbe"]]$counts)
+  max_ratio <- log10(max(tx_means)) - log10(mean(neg_probe_means))
 
-    max_ratio <- log10(max(tx_means)) - log10(mean(neg_probe_means))
-
-
-    if(platform == "Xenium"){
-      #tx_df <- filter(tx_df, features %in% feature_name)
-      tx_df <- tx_df[tx_df$feature_name %in% features, ]
-      total_tx_count <- nrow(tx_df)
-      unassigned_tx_count <- sum(tx_df$cell_id == "UNASSIGNED")
-
-      cell_tx_fraction <- (total_tx_count - unassigned_tx_count) / total_tx_count
-
-    } else if(platform == "CosMx"){
-      tx_df <- filter(tx_df, target %in% features)
-      total_tx_count <- nrow(tx_df)
-      unassigned_tx_count <- sum(tx_df$CellComp == "None")
-
-      cell_tx_fraction <- (total_tx_count - unassigned_tx_count) / total_tx_count
-
-    } else if(platform == "Merscope"){
-      print("Working on support")
-
-    } else{
-      print("Platform not supported")
-    }
-
-    #max_vals <- matrixStats::rowMaxs(as.matrix(seu_obj[["RNA"]]$counts[features,]))
-    #max_detection <-  max_vals
-    res <- data.frame(
+  # prepare result table
+  res <- data.frame(
       sample_id = unique(seu_obj$sample_id),
       platform = unique(seu_obj$platform),
       ncell = ncell,
@@ -2586,23 +3136,22 @@ genereateQCreport_table <-
     )
     Metric_table$Metric <- factor(Metric_table$Metric, levels = Metric_table$Metric)
 
-    pdf(pdfFile, width = 12, height = 4)
+    pdf(pdfFile, width = 12, height = 6)
 
     p <- ggplot( Metric_table, aes(x = Metric, y = Value)) +
       geom_point(size = 4) +
       theme_minimal() +
       labs(title = "Single Sample Metrics", x = "", y = "Value")
-    library(gridExtra)
     res_table <- tableGrob(res, rows = NULL)
     Metric_table <- tableGrob(Metric_table)
     grid.arrange(p,  Metric_table, ncol = 2, heights = c(5/6, 1/6))
-    library(grid)
     grid.newpage()
     res_table <- tableGrob(res, rows = NULL)
     grid.draw(res_table)
     dev.off()
 
     print(res)
+    return(res)
   }
 
 

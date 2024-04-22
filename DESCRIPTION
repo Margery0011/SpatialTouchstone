@@ -3,37 +3,39 @@ Title: MultiQC for spatialdata across platform
 Version: 0.0.0.9000
 Authors@R: 
     c(person("Felipe", "Dezem-Segato",role = c("aut", "cre"),email="felipe.segatodezem@stjude.org"),
-       person("Yutian","Liu",role = c("aut"),email="yutian.liu@stjude.org"))
+       person("Yutian","Liu",role = c("aut"),email="yutian.liu@stjude.org"),
+       person("Maycon","Marcao",role = c("aut"),email="Maycon.Marcao@stjude.org"))
 Description: It is an innovative tool designed to facilitate quality control for spatialomics technology data.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Imports: 
-    cowplot,
-    bluster,
+    Seurat,
     dplyr,
     ggplot2,
-    matrixStats,
+    shadowtext,
     scales,
+    cowplot,
     data.table,
-    Seurat,
+    Matrix,
+    matrixStats,
     SingleCellExperiment,
-    SpatialFeatureExperiment,
     SpatialExperiment,
-    Voyager,
-    scater,
+    SpatialFeatureExperiment,
+    bluster,
+    BiocParallel,
     BioQC,
     coop,
-    RColorBrewer,
-    viridis,
-    BiocParallel,
-    spacexr,
-    Matrix,
-    tibble,
+    fs,
     NMI,
     InSituType,
+    Voyager,
+    gridExtra,
     magrittr,
+    scater,
+    spacexr,
+    tibble,
     lsa
 URL: https://github.com/Margery0011/SpatiaTouchstone, https://margery0011.github.io/SpatiaTouchstone/
 BugReports: https://github.com/Margery0011/SpatiaTouchstone/issues

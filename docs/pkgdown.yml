@@ -2,7 +2,7 @@ pandoc: 3.1.1
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
-  SpatiaTouchstone: SpatiaTouchstone.html
   SpatialTouchstone-tutorial: SpatialTouchstone-tutorial.html
-last_built: 2024-04-16T19:04Z
+  SpatialTouchstone: SpatialTouchstone.html
+last_built: 2024-04-22T18:01Z
 
