@@ -7,9 +7,10 @@
 getTxPerArea(
   seu_obj = NULL,
   features = NULL,
-  platform,
+  platform = NULL,
   cellSegMeta = "path_to_cellMeta",
-  tx_file = NULL
+  tx_file = NULL,
+  exp_file = "path_to_exp_mtx"
 )
 }
 \arguments{
@@ -21,7 +22,7 @@ The object must have 'sample_id' and 'platform' metadata for identification and 
 Defaults to NULL, which means the calculation uses all available features in the RNA assay of the Seurat object.}
 
 \item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
-and 'Merscope'. Note: 'Merscope' is currently not supported.}
+and 'Merscope'.}
 
 \item{cellSegMeta}{Path to CellsegMeta file.}
 

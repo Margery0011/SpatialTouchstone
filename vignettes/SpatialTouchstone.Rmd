@@ -1,8 +1,8 @@
 ---
-title: "SpatiaTouchstone"
+title: "SpatiaQM"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{SpatiaTouchstone}
+  %\VignetteIndexEntry{SpatiaQM}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 pkgdown:
@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(SpatialTouchstone)
+library(SpatialQM)
 ```
 
 ```{r load df_samples}

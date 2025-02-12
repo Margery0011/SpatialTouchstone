@@ -1,15 +1,16 @@
-Package: SpatialTouchstone
-Title: MultiQC for spatialdata across platform
-Version: 0.0.0.9000
+Package: SpatialQM
+Title: Quality Metrics and support for In-Situ Spatial data across different platforms
+Version: 0.1.0.0
 Authors@R: 
-    c(person("Felipe", "Dezem-Segato",role = c("aut", "cre"),email="felipe.segatodezem@stjude.org"),
+    c(person("Felipe", "Segato Dezem",role = c("aut", "cre"),email="felipe.segatodezem@stjude.org"),
        person("Yutian","Liu",role = c("aut"),email="yutian.liu@stjude.org"),
-       person("Maycon","Marcao",role = c("aut"),email="Maycon.Marcao@stjude.org"))
+       person("Maycon","Marcao",role = c("aut"),email="Maycon.Marcao@stjude.org"),
+       person("David","Cook",role = c("aut"),email="David.Cook@uottawa.ca"))
 Description: It is an innovative tool designed to facilitate quality control for spatialomics technology data.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Imports: 
     Seurat,
     dplyr,
@@ -22,23 +23,23 @@ Imports:
     matrixStats,
     SingleCellExperiment,
     SpatialExperiment,
-    SpatialFeatureExperiment,
     bluster,
     BiocParallel,
     BioQC,
     coop,
     fs,
     NMI,
-    InSituType,
     Voyager,
     gridExtra,
     magrittr,
-    scater,
-    spacexr,
     tibble,
-    lsa
-URL: https://github.com/Margery0011/SpatiaTouchstone, https://margery0011.github.io/SpatiaTouchstone/
-BugReports: https://github.com/Margery0011/SpatiaTouchstone/issues
+    lsa,
+    scater,
+    SpatialFeatureExperiment,
+    InSituType,
+    spacexr
+URL: https://github.com/Center-for-Spatial-OMICs/SpatialQM
+BugReports: https://github.com/Center-for-Spatial-OMICs/SpatialQM/issues
 Suggests: 
     knitr,
     rmarkdown,

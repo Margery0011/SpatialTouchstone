@@ -21,7 +21,7 @@ of the Seurat object.}
 \item{expMat}{Path to exprMatrix file.}
 
 \item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
-and 'Merscope'. Note: 'Merscope' is currently not supported.}
+and 'Merscope'.}
 }
 \value{
 A data frame with the \code{sample_id}, \code{platform}, and the entropy value of the RNA count matrix, rounded to three decimal places.

@@ -22,7 +22,7 @@ of the Seurat object.}
 \item{expMat}{Path to exprMatrix file.}
 
 \item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
-and 'Merscope'. Note: 'Merscope' is currently not supported.}
+and 'Merscope'.}
 }
 \value{
 A data frame with columns 'sample_id', 'platform', and 'value', where 'value' represents the

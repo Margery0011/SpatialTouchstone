@@ -28,7 +28,7 @@ Defaults to "QCReportTable.pdf".}
 \item{path}{The file path from which to load the spatial transcriptomics data.}
 
 \item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
-and 'Merscope'. Note: 'Merscope' is currently not supported.}
+and 'Merscope'.}
 }
 \value{
 A data frame with the QC metrics for the provided Seurat object, which is also printed to the console.

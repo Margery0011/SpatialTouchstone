@@ -24,7 +24,7 @@ This function supports processing of '.mtx.gz' for sparse matrices, or '.h5'
 files for HDF5 format expression matrices.}
 
 \item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
-and 'Merscope'. Note: 'Merscope' is currently not supported.}
+and 'Merscope'.}
 }
 \description{
 Calculate the complexity of expression data, determining the number

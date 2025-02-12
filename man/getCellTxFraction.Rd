@@ -8,8 +8,7 @@ getCellTxFraction(
   seu_obj = NULL,
   features = NULL,
   tx_file = "path_to_tx",
-  platform = NULL,
-  path
+  platform = NULL
 )
 }
 \arguments{
@@ -20,7 +19,7 @@ getCellTxFraction(
 \item{tx_file}{Path to transcription file.}
 
 \item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
-and 'Merscope'. Note: 'Merscope' is currently not supported.}
+and 'Merscope'.}
 
 \item{path}{path}
 }

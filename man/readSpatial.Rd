@@ -12,7 +12,7 @@ readSpatial(sample_id, path, platform = NULL, seurat = FALSE)
 \item{path}{The file path from which to load the spatial transcriptomics data.}
 
 \item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
-and 'Merscope'. Note: 'Merscope' is currently not supported.}
+and 'Merscope'.}
 
 \item{seurat}{Return a seurat object or not.}
 }
@@ -32,5 +32,4 @@ preprocessing steps. This includes loading the data, annotating it with sample m
 processing cell metadata. For 'Xenium', it adds additional cell metadata and tissue coordinates
 as an embedding for custom plotting. For 'CosMx', it fixes assays to separate targeting and
 non-targeting probes, adds additional cell metadata, and includes tissue coordinates as an embedding.
-'Merscope' platform support is under development.
 }

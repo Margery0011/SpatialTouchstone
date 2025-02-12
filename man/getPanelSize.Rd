@@ -17,7 +17,7 @@ expression data files. This parameter is used if no Seurat object is provided.
 The function supports both flat files and Hierarchical Data Format (HDF5) files.}
 
 \item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
-and 'Merscope'. Note: 'Merscope' is currently not supported.}
+and 'Merscope'.}
 }
 \value{
 Returns an integer indicating the number of valid features (excluding controls

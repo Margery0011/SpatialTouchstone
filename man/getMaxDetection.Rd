@@ -20,7 +20,7 @@ expression values. If NULL, the calculation encompasses all genes in the dataset
 \item{expMat}{Path to exprMatrix file.}
 
 \item{platform}{The platform from which the data originates. Valid options are 'Xenium', 'CosMx',
-and 'Merscope'. Note: 'Merscope' is currently not supported.}
+and 'Merscope'.}
 }
 \value{
 A data frame summarizing the maximal expression values across the specified features or the
