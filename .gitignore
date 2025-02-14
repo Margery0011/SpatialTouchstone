@@ -8,3 +8,6 @@
 .Rdata
 inst/doc
 #docs
+Data/
+.Data
+Data
