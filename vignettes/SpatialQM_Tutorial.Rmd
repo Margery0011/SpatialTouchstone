@@ -1,0 +1,28 @@
+---
+title: "IntroductionSpatialQM"
+output: html_document
+date: "2025-02-13"
+---
+
+```{r}
+library(SpatialQM)
+library(Seurat)
+library(dplyr)
+library(gridExtra)
+```
+
+
+```{r read data as a seurat object,warning=FALSE}
+# Return a seurat object 
+# result_seu <- readSpatial(sample_id = "test1",path="/mnt/plummergrp/Yutian/Rscripts/SpatiaTouchstone/SpatialTouchstone/Data/TOUCHSTONE_EAP_XRS_FFPE_PR_3_UOA_C_R1/",platform = "Xenium",seurat = TRUE)
+result_seu <- readRDS("/mnt/plummergrp/Yutian/Rscripts/SpatiaTouchstone/SpatialTouchstone/Data/Example_Seurat/SpatialTOUCHSTONE_EAP_XRS_FFPE_PR_3_UOA_C_R1_Seurat.rds")
+print(result_seu)
+```
+
+```{r getTxPerCell, error=TRUE}
+getTxPerCell_seu<- getTxPerCell(expMat=NULL,platform = "Xenium",seu_obj = result_seu)
+getTxPerCell_seu
+```
+
+
+

@@ -1,8 +1,9 @@
 ^SpatiaTouchstone\.Rproj$
 ^\.Rproj\.user$
-^LICENSE\.md$
-^README.MD$
-^_pkgdown\.yml$
-^pkgdown$
+#^LICENSE\.md$
+#^README.MD$
+#^_pkgdown\.yml$
+#^pkgdown$
 ^\.github$
-^README\.Rmd$
+#^README\.Rmd$
+#^docs$
