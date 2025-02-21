@@ -2,6 +2,11 @@ pandoc: 2.19.2
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
-  SpatialQM_Tutorial: SpatialQM_Tutorial.html
+  - title: "Installation Guide"
+    contents:
+      - Install
+  - title: "SpatialQM Tutorial"
+    contents:
+      - SpatialQM_Tutorial
 last_built: 2025-02-14T17:35Z
 
